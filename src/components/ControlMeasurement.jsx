@@ -247,8 +247,8 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                         className="bg-transparent text-xs text-slate-200 outline-none"
                                     >
                                         <option value="">-- Signera --</option>
-                                        <option value="NJA">Niklas Jalvemyr (NJA)</option>
-                                        <option value="AS">Adam Svensson (AS)</option>
+                                        <option value="Niklas Jalvemyr">Niklas Jalvemyr</option>
+                                        <option value="Olle Ljungberg">Olle Ljungberg</option>
                                     </select>
                                 </div>
 
