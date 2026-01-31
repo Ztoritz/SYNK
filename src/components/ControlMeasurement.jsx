@@ -248,7 +248,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                     >
                                         <option value="">-- Signera --</option>
                                         <option value="NJA">Niklas Jalvemyr (NJA)</option>
-                                        <option value="DN">Dan Notesjö (DN)</option>
+                                        <option value="AS">Adam Svensson (AS)</option>
                                     </select>
                                 </div>
 
