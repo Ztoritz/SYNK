@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 import VaultSystem from './components/VaultSystem';
 import MovexSystem from './components/MovexSystem';
-import { ArrowRightLeft, Activity, Code, LayoutDashboard, Ruler, RotateCcw } from 'lucide-react';
+import { ArrowRightLeft, Activity, Code, LayoutDashboard, Ruler, RotateCcw, Wifi } from 'lucide-react';
 import ErrorBoundary from './components/ErrorBoundary';
 import ControlMeasurement from './components/ControlMeasurement';
+import NetworkSimulation from './components/NetworkSimulation';
 
 function App() {
     const [currentView, setCurrentView] = useState('configurator'); // 'configurator' | 'measurement'
@@ -298,6 +299,12 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
                         >
                             <Ruler size={14} /> Kontrollmätning
                         </button>
+                        <button
+                            onClick={() => setCurrentView('network')}
+                            className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-all ${currentView === 'network' ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            <Wifi size={14} /> Nätverk
+                        </button>
                     </div>
                 </div>
 
@@ -355,7 +362,7 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
                         <MovexSystem items={movexItems} onUpdateItems={setMovexItems} onSync={syncToVault} />
                     </div>
                 </div>
-            ) : (
+            ) : currentView === 'measurement' ? (
                 /* Measurement View */
                 <div className="flex-1 flex overflow-hidden">
                     <div className="flex-1 flex">
@@ -378,6 +385,11 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
                             </div>
                         </div>
                     </div>
+                </div>
+            ) : (
+                /* Network View */
+                <div className="flex-1 overflow-hidden">
+                    <NetworkSimulation />
                 </div>
             )}
         </div>
