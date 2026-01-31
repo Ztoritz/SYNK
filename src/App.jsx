@@ -215,6 +215,13 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
   <Status>REQUESTED</Status>${defXml}
 </MeasurementRequest>`;
         setXmlLog(xml);
+
+        // SYNC: Send to XML Server
+        fetch(`${API_URL}/api/parse`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/xml' },
+            body: xml
+        }).catch(err => console.error("Failed to send order:", err));
     };
 
     // Sync Logics
