@@ -9,6 +9,47 @@ import NetworkSimulation from './components/NetworkSimulation';
 function App() {
     const [currentView, setCurrentView] = useState('configurator'); // 'configurator' | 'measurement'
 
+    // Server Configuration
+    const SERVER_DOMAIN = 'oso80gcwkkwgogocc8wsowco.109.205.176.58.sslip.io';
+    const PROTOCOL = window.location.protocol;
+    const API_URL = import.meta.env.VITE_API_URL || `${PROTOCOL}//${SERVER_DOMAIN}`;
+
+    // Polling active orders from XML Server
+    React.useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/orders`);
+                if (res.ok) {
+                    const data = await res.json();
+
+                    // Transform Server Orders to App Request Format
+                    const newRequests = data.map(order => ({
+                        id: order.id,
+                        articleNumber: order.article || order.ArticleNumber || 'Unknown',
+                        drawingNumber: order.drawing || order.DrawingNumber || '?.??',
+                        timestamp: order.receivedAt || new Date().toISOString(),
+                        status: order.status,
+                        // If there are definitions in rawData, map them? For now simple list.
+                    }));
+
+                    // Only update if different length to avoid constantly resetting UI state (simple check)
+                    setMeasurementRequests(prev => {
+                        if (JSON.stringify(prev) !== JSON.stringify(newRequests)) {
+                            return newRequests;
+                        }
+                        return prev;
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to sync orders:", err);
+            }
+        };
+
+        const interval = setInterval(fetchOrders, 5000);
+        fetchOrders(); // Initial fetch
+        return () => clearInterval(interval);
+    }, []);
+
     const [vaultItems, setVaultItems] = useState([
         { id: '1', artikelnummer: '20-100', beskrivning: 'Stålavalts', ritningsnummer: 'R-1001', leverantör: 'Svenskt Stål AB', inköpspris: '5000', pdfUrl: '\\\\SERVER\\Ritningar\\R-1001.pdf' }
     ]);
