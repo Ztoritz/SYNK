@@ -1,0 +1,242 @@
+import React, { useState } from 'react';
+import ParameterManager from './components/ParameterManager';
+import XmlMapper from './components/XmlMapper';
+import FlowVisualizer from './components/FlowVisualizer';
+import VaultExplorer from './components/VaultExplorer';
+import TransferSimulation from './components/TransferSimulation';
+import ErpSystem from './components/ErpSystem';
+import Toast from './components/Toast';
+import { Layers, Activity, Settings, Share2, ToggleRight, Box } from 'lucide-react';
+
+function App() {
+    // State for app data
+    const [parameters, setParameters] = useState([
+        { id: '1', name: 'RollerDiameter', type: 'number', defaultValue: '0', description: 'Diameter of the roller in mm' },
+        { id: '2', name: 'MaterialGrade', type: 'string', defaultValue: 'Standard', description: 'Material specification' }
+    ]);
+
+    const [xmlData, setXmlData] = useState('');
+    const [parsedXml, setParsedXml] = useState([]);
+    const [mappings, setMappings] = useState([]); // Added missing state
+    const [toast, setToast] = useState(null); // { message, type }
+
+    // State for Simulation Mode
+    const [mode, setMode] = useState('vault'); // 'generic' or 'vault'
+
+    // Vault Data State
+    const [vaultData, setVaultData] = useState([
+        {
+            id: '1', type: 'assembly', partNumber: 'ASM-2000', description: 'Complete Roller Setup', drawingNumber: 'DRW-2000-A', supplier: 'Internal', price: '0',
+            children: [
+                { id: '2', type: 'part', partNumber: 'PART-500', description: 'Core Shaft', drawingNumber: 'DRW-500', supplier: 'MetalWorks Inc', price: '2500', children: [] },
+                { id: '3', type: 'part', partNumber: 'PART-600', description: 'Outer Shell', drawingNumber: 'DRW-600', supplier: 'Foundry Co', price: '1500', children: [] },
+                { id: '4', type: 'part', partNumber: 'STD-BOLT-10', description: 'M10 Hex Bolt', drawingNumber: 'DIN-933', supplier: 'Fasteners Ltd', price: '5', children: [] }
+            ]
+        },
+        {
+            id: '5', type: 'part', partNumber: 'SPARE-KIT-99', description: 'Maintenance Kit', drawingNumber: 'N/A', supplier: 'ServiceDept', price: '450', children: []
+        }
+    ]);
+    const [erpData, setErpData] = useState([]);
+
+    const handleTransfer = (sourceData) => {
+        // Flatten the tree for ERP (simple implementation)
+        const flatten = (nodes) => {
+            let flat = [];
+            nodes.forEach(node => {
+                flat.push({
+                    id: node.id,
+                    partNumber: node.partNumber,
+                    description: node.description,
+                    supplier: node.supplier,
+                    price: node.price,
+                    drawingNumber: node.drawingNumber
+                });
+                if (node.children) flat = flat.concat(flatten(node.children));
+            });
+            return flat;
+        };
+
+        // Merge with existing (simulate update/create)
+        const incoming = flatten(sourceData);
+        setErpData(incoming);
+        setToast({ message: 'Data processed to ERP successfully!', type: 'success' });
+    };
+
+    const handleSyncToVault = () => {
+        if (erpData.length === 0) {
+            setToast({ message: 'No ERP data to sync!', type: 'error' });
+            return;
+        }
+
+        // Create a map for quick lookup
+        const erpMap = new Map(erpData.map(item => [item.id, item]));
+        let updateCount = 0;
+
+        const updateVaultRecursive = (nodes) => {
+            return nodes.map(node => {
+                const erpItem = erpMap.get(node.id);
+                let updatedNode = { ...node };
+
+                if (erpItem) {
+                    // Check if anything actually changed to count updates
+                    if (updatedNode.description !== erpItem.description ||
+                        updatedNode.supplier !== erpItem.supplier ||
+                        updatedNode.price !== erpItem.price) {
+                        updateCount++;
+                    }
+
+                    updatedNode.description = erpItem.description;
+                    updatedNode.supplier = erpItem.supplier;
+                    updatedNode.price = erpItem.price;
+                }
+
+                if (node.children) {
+                    updatedNode.children = updateVaultRecursive(node.children);
+                }
+                return updatedNode;
+            });
+        };
+
+        const newVaultData = updateVaultRecursive(vaultData);
+        setVaultData(newVaultData);
+
+        if (updateCount > 0) {
+            setToast({ message: `Synced ${updateCount} items back to Vault!`, type: 'success' });
+        } else {
+            setToast({ message: 'Vault is already up to date.', type: 'success' });
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0f172a] to-slate-950 p-4 font-sans text-slate-200 selection:bg-blue-500/30">
+
+            {/* Header */}
+            <header className="max-w-[1600px] mx-auto mb-6 flex items-center justify-between glass px-6 py-4 rounded-xl">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-600/20">
+                        <Layers className="text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold tracking-tight text-white">Parameter Bridge</h1>
+                        <p className="text-xs text-blue-300/80 font-medium tracking-wide uppercase">Construct to Production</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-xs text-slate-400">
+                        <Activity size={14} className="text-emerald-400" />
+                        <span>System Active</span>
+                    </div>
+
+                    <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
+                        <button
+                            onClick={() => setMode('generic')}
+                            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${mode === 'generic' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            Generic
+                        </button>
+                        <button
+                            onClick={() => setMode('vault')}
+                            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${mode === 'vault' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            Vault Sim
+                        </button>
+                    </div>
+
+                    <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-blue-600/20">
+                        <Share2 size={16} /> Export Config
+                    </button>
+                </div>
+            </header>
+
+            {/* Main Dashboard Grid */}
+            <main className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)] min-h-[600px]">
+
+                {mode === 'generic' ? (
+                    <>
+                        {/* Column 1: Define */}
+                        <section className="flex flex-col gap-2 min-h-[400px]">
+                            <div className="flex items-center gap-2 px-2 pb-2 border-b border-slate-800/50 mb-2">
+                                <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">1</div>
+                                <h3 className="text-sm font-semibold text-slate-300">Define Parameters</h3>
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <ParameterManager
+                                    parameters={parameters}
+                                    setParameters={setParameters}
+                                />
+                            </div>
+                        </section>
+
+                        {/* Column 2: Map */}
+                        <section className="flex flex-col gap-2 min-h-[400px]">
+                            <div className="flex items-center gap-2 px-2 pb-2 border-b border-slate-800/50 mb-2">
+                                <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">2</div>
+                                <h3 className="text-sm font-semibold text-slate-300">Import & Map XML</h3>
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <XmlMapper
+                                    parameters={parameters}
+                                    mappings={mappings}
+                                    setMappings={setMappings}
+                                    xmlData={xmlData}
+                                    setXmlData={setXmlData}
+                                    parsedXml={parsedXml}
+                                    setParsedXml={setParsedXml}
+                                />
+                            </div>
+                        </section>
+
+                        {/* Column 3: Visualize */}
+                        <section className="flex flex-col gap-2 min-h-[400px]">
+                            <div className="flex items-center gap-2 px-2 pb-2 border-b border-slate-800/50 mb-2">
+                                <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">3</div>
+                                <h3 className="text-sm font-semibold text-slate-300">Data Flow</h3>
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <FlowVisualizer
+                                    parameters={parameters}
+                                    mappings={mappings}
+                                    parsedXml={parsedXml}
+                                />
+                            </div>
+                        </section>
+                    </>
+                ) : (
+                    <>
+                        {/* Vault Source */}
+                        <section className="flex flex-col gap-2 min-h-[400px]">
+                            <div className="flex-1 overflow-hidden">
+                                <VaultExplorer vaultData={vaultData} setVaultData={setVaultData} />
+                            </div>
+                        </section>
+
+                        {/* IntegrationHub */}
+                        <section className="flex flex-col gap-2 min-h-[400px]">
+                            <div className="flex-1 overflow-hidden">
+                                <TransferSimulation vaultData={vaultData} onTransfer={handleTransfer} />
+                            </div>
+                        </section>
+
+                        {/* ERP Destination */}
+                        <section className="flex flex-col gap-2 min-h-[400px]">
+                            <div className="flex-1 overflow-hidden">
+                                <ErpSystem
+                                    erpData={erpData}
+                                    setErpData={setErpData}
+                                    onSyncToVault={handleSyncToVault}
+                                />
+                            </div>
+                        </section>
+                    </>
+                )}
+
+            </main>
+
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+        </div>
+    );
+}
+
+export default App;
