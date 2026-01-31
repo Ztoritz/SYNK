@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Save, CheckCircle, AlertCircle, FileSpreadsheet, Ruler, Inbox, ArrowRight, UserCheck, X, FileText } from 'lucide-react';
+import { Save, CheckCircle, AlertCircle, FileSpreadsheet, Ruler, Inbox, ArrowRight, UserCheck, X, FileText, FileImage } from 'lucide-react';
 
 const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedRequests = [], onSelectRequest }) => {
     const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' | 'archive'
     const [currentRequestId, setCurrentRequestId] = useState(null);
     const [isArchiveDetailOpen, setIsArchiveDetailOpen] = useState(false);
     const [selectedArchiveItem, setSelectedArchiveItem] = useState(null);
+    const [currentPdfUrl, setCurrentPdfUrl] = useState(null);
+    const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
     const [header, setHeader] = useState({
         articleNumber: '',
@@ -35,6 +37,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
             articleNumber: req.articleNumber,
             drawingNumber: req.drawingNumber
         });
+        setCurrentPdfUrl(req.pdfUrl || null);
 
         // If definitions exist, overwrite local state to match
         if (req.definitions && req.definitions.length > 0) {
@@ -258,6 +261,15 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                 >
                                     <Save size={18} /> Spara
                                 </button>
+
+                                {currentPdfUrl && (
+                                    <button
+                                        onClick={() => setIsPdfModalOpen(true)}
+                                        className="px-4 py-2 rounded-lg font-medium flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white transition-colors shadow-lg shadow-blue-600/20"
+                                    >
+                                        <FileImage size={18} /> Ritning
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -452,6 +464,81 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                         <div className="flex justify-end gap-2 p-4 border-t border-slate-700">
                             <button
                                 onClick={() => setIsArchiveDetailOpen(false)}
+                                className="px-4 py-2 rounded text-xs bg-slate-700 hover:bg-slate-600 text-slate-300"
+                            >
+                                Stäng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* PDF Drawing Modal */}
+            {isPdfModalOpen && currentPdfUrl && (
+                <div className="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-8">
+                    <div className="bg-slate-800 rounded-lg border border-slate-700 w-full max-w-4xl max-h-[85vh] flex flex-col">
+                        <div className="flex justify-between items-center p-4 border-b border-slate-700">
+                            <div>
+                                <h3 className="font-bold text-slate-100 flex items-center gap-2">
+                                    <FileImage size={16} className="text-blue-500" /> Ritning
+                                </h3>
+                                <div className="text-xs text-slate-400 mt-1 font-mono">{currentPdfUrl}</div>
+                            </div>
+                            <button onClick={() => setIsPdfModalOpen(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
+                        </div>
+
+                        {/* Simulated PDF Viewer */}
+                        <div className="flex-1 flex items-center justify-center bg-slate-950 p-8 overflow-auto">
+                            <div className="bg-white rounded shadow-2xl w-full max-w-2xl aspect-[1/1.414] flex flex-col items-center justify-center p-8 relative">
+                                {/* Simulated drawing content */}
+                                <div className="absolute top-4 right-4 text-[10px] font-mono text-slate-500">
+                                    {header.drawingNumber}
+                                </div>
+                                <div className="border-2 border-slate-300 w-full h-full flex flex-col items-center justify-center gap-4 p-4">
+                                    <div className="text-lg font-bold text-slate-800">{header.articleNumber}</div>
+                                    <div className="text-sm text-slate-600">{header.drawingNumber}</div>
+
+                                    {/* Simulated drawing - dimensions */}
+                                    <div className="flex-1 flex items-center justify-center w-full">
+                                        <div className="relative">
+                                            <div className="w-64 h-32 bg-slate-200 rounded-lg border-2 border-slate-400 flex items-center justify-center">
+                                                <div className="text-xl font-bold text-slate-600">⬡</div>
+                                            </div>
+                                            {/* Dimension lines */}
+                                            <div className="absolute -top-6 left-0 right-0 flex justify-center text-xs text-red-600 font-mono">
+                                                ← M1: Ø50±0.1 →
+                                            </div>
+                                            <div className="absolute -right-16 top-1/2 -translate-y-1/2 text-xs text-red-600 font-mono rotate-90">
+                                                M2: 100±0.2
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Title block */}
+                                    <div className="w-full border-t-2 border-slate-400 pt-2 grid grid-cols-3 gap-2 text-[10px] text-slate-600">
+                                        <div>
+                                            <span className="block text-slate-400">Ritad av</span>
+                                            Konstruktion
+                                        </div>
+                                        <div>
+                                            <span className="block text-slate-400">Datum</span>
+                                            {new Date().toLocaleDateString('sv-SE')}
+                                        </div>
+                                        <div>
+                                            <span className="block text-slate-400">Skala</span>
+                                            1:1
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center gap-2 p-4 border-t border-slate-700">
+                            <div className="text-xs text-slate-500">
+                                📁 Sökväg: <span className="font-mono text-slate-400">{currentPdfUrl}</span>
+                            </div>
+                            <button
+                                onClick={() => setIsPdfModalOpen(false)}
                                 className="px-4 py-2 rounded text-xs bg-slate-700 hover:bg-slate-600 text-slate-300"
                             >
                                 Stäng

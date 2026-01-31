@@ -10,7 +10,7 @@ function App() {
     const [currentView, setCurrentView] = useState('configurator'); // 'configurator' | 'measurement'
 
     const [vaultItems, setVaultItems] = useState([
-        { id: '1', artikelnummer: '20-100', beskrivning: 'Stålavalts', ritningsnummer: 'R-1001', leverantör: 'Svenskt Stål AB', inköpspris: '5000' }
+        { id: '1', artikelnummer: '20-100', beskrivning: 'Stålavalts', ritningsnummer: 'R-1001', leverantör: 'Svenskt Stål AB', inköpspris: '5000', pdfUrl: '\\\\SERVER\\Ritningar\\R-1001.pdf' }
     ]);
 
     const [movexItems, setMovexItems] = useState([
@@ -154,6 +154,7 @@ function App() {
             id: Date.now().toString(),
             articleNumber: item.artikelnummer,
             drawingNumber: item.ritningsnummer,
+            pdfUrl: item.pdfUrl,
             definitions, // Array of { id, nominal, ... }
             timestamp
         };
@@ -169,6 +170,7 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
         const xml = `<MeasurementRequest timestamp="${timestamp}" id="${request.id}">
   <ArticleNumber>${item.artikelnummer}</ArticleNumber>
   <DrawingNumber>${item.ritningsnummer}</DrawingNumber>
+  <PdfUrl>${item.pdfUrl || ''}</PdfUrl>
   <Status>REQUESTED</Status>${defXml}
 </MeasurementRequest>`;
         setXmlLog(xml);

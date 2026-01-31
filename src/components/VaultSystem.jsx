@@ -132,6 +132,12 @@ const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matko
                             onChange={e => setNewItem({ ...newItem, leverantör: e.target.value })}
                             className="w-full text-sm bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200"
                         />
+                        <input
+                            placeholder="PDF Ritning (sökväg)"
+                            value={newItem.pdfUrl || ''}
+                            onChange={e => setNewItem({ ...newItem, pdfUrl: e.target.value })}
+                            className="w-full text-sm bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200 font-mono text-xs"
+                        />
                         <button
                             onClick={handleAdd}
                             className="w-full mt-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium py-1.5 rounded flex items-center justify-center gap-2"
