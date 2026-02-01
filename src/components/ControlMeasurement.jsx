@@ -363,21 +363,27 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
 
                                                 {/* Method / GDT */}
                                                 <td className="p-3 text-center">
-                                                    <span className="text-sm font-bold text-slate-300" title={m.gdtType}>
-                                                        {{
-                                                            'none': '-',
-                                                            'position': '⌖',
-                                                            'flatness': '⏥',
-                                                            'perpendicularity': '⟂',
-                                                            'parallelism': '∥',
-                                                            'concentricity': '◎',
-                                                            'cylindricity': '⌭',
-                                                            'roundness': '○',
-                                                            'straightness': '⏤',
-                                                            'profile_surface': '⌓',
-                                                            'runout': '↗'
-                                                        }[m.gdtType] || '-'}
-                                                    </span>
+                                                    {(() => {
+                                                        const GDT_INFO = {
+                                                            'none': { s: '-', t: 'Ingen formtolerans' },
+                                                            'position': { s: '⌖', t: 'Position (Position) - Controls location relative to datums' },
+                                                            'flatness': { s: '⏥', t: 'Planhet (Flatness) - Controls surface deviation from a perfect plane' },
+                                                            'perpendicularity': { s: '⟂', t: 'Vinkelräthet (Perpendicularity) - Controls 90° angle deviation' },
+                                                            'parallelism': { s: '∥', t: 'Parallellitet (Parallelism) - Controls equidistant deviation' },
+                                                            'concentricity': { s: '◎', t: 'Koncentricitet (Concentricity) - Controls center axis deviation' },
+                                                            'cylindricity': { s: '⌭', t: 'Cylindricitet (Cylindricity) - Controls deviations of a cylinder' },
+                                                            'roundness': { s: '○', t: 'Rundhet (Roundness) - Controls deviations of a circle' },
+                                                            'straightness': { s: '⏤', t: 'Rakhet (Straightness) - Controls linear deviation' },
+                                                            'profile_surface': { s: '⌓', t: 'Ytprofil (Profile of Surface) - Controls surface form' },
+                                                            'runout': { s: '↗', t: 'Kast (Runout) - Controls variation during rotation' }
+                                                        };
+                                                        const info = GDT_INFO[m.gdtType] || GDT_INFO['none'];
+                                                        return (
+                                                            <span className="text-sm font-bold text-slate-300 cursor-help border-b border-dotted border-slate-600 pb-0.5" title={info.t}>
+                                                                {info.s}
+                                                            </span>
+                                                        );
+                                                    })()}
                                                 </td>
 
                                                 {/* Nominal */}
