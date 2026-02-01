@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Save, CheckCircle, AlertCircle, FileSpreadsheet, Ruler, Inbox, ArrowRight, UserCheck, X, FileText, FileImage, Plus, LogOut, Trash2 } from 'lucide-react';
 import MeasurementReportCard from './MeasurementReportCard';
 
-const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedRequests = [], onSelectRequest, onDeleteOrder }) => {
+const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedRequests = [], onSelectRequest, onDeleteOrder, operatorList = [], onUpdateOperators }) => {
     const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' | 'archive'
     const [currentRequestId, setCurrentRequestId] = useState(null);
     const [isArchiveDetailOpen, setIsArchiveDetailOpen] = useState(false);
@@ -15,13 +15,10 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
     const [signingOperator, setSigningOperator] = useState('');
     const [newOperatorInput, setNewOperatorInput] = useState('');
 
-    // Initialize operator list from localStorage or defaults
-    const [operatorList, setOperatorList] = useState(() => {
-        const saved = localStorage.getItem('simAkers_operators');
-        return saved ? JSON.parse(saved) : ['Niklas Jalvemyr', 'Olle Ljungberg'];
-    });
+    // Initialize operator list from props (managed by App -> Server)
+    // Removed local state initialization for operatorList
 
-    // Update localStorage when list changes
+    // Update Server when list changes
     const handleAddOperator = () => {
         if (!newOperatorInput.trim()) return;
         if (operatorList.includes(newOperatorInput.trim())) {
@@ -29,8 +26,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
             return;
         }
         const newList = [...operatorList, newOperatorInput.trim()].sort();
-        setOperatorList(newList);
-        localStorage.setItem('simAkers_operators', JSON.stringify(newList));
+        onUpdateOperators(newList);
         setNewOperatorInput('');
         setSigningOperator(newOperatorInput.trim()); // Auto-select new operator
     };
@@ -38,8 +34,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
     const handleRemoveOperator = (opName) => {
         if (confirm(`Ta bort ${opName} från listan?`)) {
             const newList = operatorList.filter(o => o !== opName);
-            setOperatorList(newList);
-            localStorage.setItem('simAkers_operators', JSON.stringify(newList));
+            onUpdateOperators(newList);
             if (signingOperator === opName) setSigningOperator('');
         }
     };

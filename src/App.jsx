@@ -38,6 +38,7 @@ function App() {
     const [measurementRequests, setMeasurementRequests] = useState([]);
     const [archivedRequests, setArchivedRequests] = useState([]);
     const [matkortFolder, setMatkortFolder] = useState([]);
+    const [operatorList, setOperatorList] = useState([]); // Master List from Server
 
     // Refs
     const requestsRef = useRef(measurementRequests);
@@ -64,6 +65,7 @@ function App() {
             console.log("Initial State:", data);
             setMeasurementRequests(data.activeOrders || []);
             setArchivedRequests(data.archivedOrders || []); // Sync Archive from Server!
+            if (data.operators) setOperatorList(data.operators); // Init operators
         });
 
         // 1. Order Created (Broadcasted back to us, or from others)
@@ -73,6 +75,11 @@ function App() {
                 if (prev.find(o => o.id === order.id)) return prev;
                 return [order, ...prev];
             });
+        });
+
+        // 2b. Operators Updated
+        newSocket.on('operators_updated', (ops) => {
+            setOperatorList(ops);
         });
 
         // 2. Order Completed (From Mobile or SYNK)
@@ -490,6 +497,14 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
         }
     };
 
+    const handleUpdateOperators = (newList) => {
+        // Optimistic
+        setOperatorList(newList);
+        if (socket && connected) {
+            socket.emit('update_operators', newList);
+        }
+    };
+
     return (
         <div className="flex flex-col h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30">
             {/* Header */}
@@ -587,13 +602,15 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
                             incomingRequests={measurementRequests}
                             archivedRequests={archivedRequests}
                             onSelectRequest={(id) => {
-                                // Optional: mark as read or remove from queue
+                                // Optional logic
                             }}
                             onDeleteOrder={handleDeleteOrder}
+                            operatorList={operatorList}
+                            onUpdateOperators={handleUpdateOperators}
                         />
 
                         {/* Optional: Side XML view for measurement too */}
-                        <div className="w-96 border-l border-slate-700 bg-slate-950 flex flex-col">
+                        < div className="w-96 border-l border-slate-700 bg-slate-950 flex flex-col" >
                             <div className="p-4 border-b border-slate-700 bg-slate-900/30">
                                 <h3 className="font-semibold text-slate-300 flex items-center gap-2"><Code size={16} /> Sync Output</h3>
                             </div>
@@ -608,8 +625,9 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
                 <div className="flex-1 overflow-hidden">
                     <NetworkSimulation />
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 
