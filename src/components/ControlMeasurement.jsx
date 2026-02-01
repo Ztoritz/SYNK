@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, CheckCircle, AlertCircle, FileSpreadsheet, Ruler, Inbox, ArrowRight, UserCheck, X, FileText, FileImage } from 'lucide-react';
+import { Save, CheckCircle, AlertCircle, FileSpreadsheet, Ruler, Inbox, ArrowRight, UserCheck, X, FileText, FileImage, Plus, LogOut } from 'lucide-react';
 import MeasurementReportCard from './MeasurementReportCard';
 
 const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedRequests = [], onSelectRequest }) => {
@@ -14,9 +14,29 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
     const [operatorName, setOperatorName] = useState('');
     const [isOperatorRegistered, setIsOperatorRegistered] = useState(false);
     const [tempOperatorName, setTempOperatorName] = useState('');
+    const [newOperatorInput, setNewOperatorInput] = useState('');
+
+    // Initialize operator list from localStorage or defaults
+    const [operatorList, setOperatorList] = useState(() => {
+        const saved = localStorage.getItem('simAkers_operators');
+        return saved ? JSON.parse(saved) : ['Niklas Jalvemyr', 'Dan Notesjö', 'Olle Ljungberg'];
+    });
+
+    // Update localStorage when list changes
+    const handleAddOperator = () => {
+        if (!newOperatorInput.trim()) return;
+        if (operatorList.includes(newOperatorInput.trim())) {
+            alert("Operatör finns redan i listan!");
+            return;
+        }
+        const newList = [...operatorList, newOperatorInput.trim()].sort();
+        setOperatorList(newList);
+        localStorage.setItem('simAkers_operators', JSON.stringify(newList));
+        setNewOperatorInput('');
+    };
 
     const handleRegisterOperator = () => {
-        if (!tempOperatorName.trim()) return;
+        if (!tempOperatorName) return;
         setOperatorName(tempOperatorName);
         setIsOperatorRegistered(true);
     };
