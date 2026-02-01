@@ -84,7 +84,7 @@ function App() {
 
             // Update Archive (Add to top)
             setArchivedRequests(prev => {
-                if (prev.find(o => o.id === completedOrder.id)) return prev;
+                if (prev.some(o => o.id === completedOrder.id)) return prev;
                 return [completedOrder, ...prev];
             });
 
@@ -99,14 +99,9 @@ function App() {
     }, []);
 
     // Logic to handle a completed order (Archiving, Vault Update)
+    // Logic to update Vault and Matkort (Side effects only)
     const handleOrderCompletion = (order) => {
-        // 1. Remove from Requests
-        setMeasurementRequests(prev => prev.filter(r => r.id !== order.id));
-
-        // 2. Add to Archives
-        setArchivedRequests(prev => [order, ...prev]);
-
-        // 3. Update Vault Item
+        // 1. Update Vault Item
         if (order.articleNumber) {
             setVaultItems(prev => prev.map(item => {
                 if (item.artikelnummer === order.articleNumber) {
@@ -135,11 +130,11 @@ function App() {
             }));
         }
 
-        // 4. Save to Matkort Folder (Inventory)
+        // 2. Save to Matkort Folder (Inventory)
         const isAllOk = order.results.every(r => r.status === 'OK');
         const matkort = {
-            id: Date.now().toString(),
-            serialNumber: `M-${order.drawingNumber}-Socket`, // Simplified for now
+            id: order.id || Date.now().toString(),
+            serialNumber: `M-${order.drawingNumber}-Socket`,
             articleNumber: order.articleNumber,
             drawingNumber: order.drawingNumber,
             controller: order.controller,
@@ -147,7 +142,11 @@ function App() {
             status: isAllOk ? 'OK' : 'FAIL',
             parameters: order.results,
         };
-        setMatkortFolder(prev => [matkort, ...prev]);
+
+        setMatkortFolder(prev => {
+            if (prev.some(m => m.id === matkort.id)) return prev;
+            return [matkort, ...prev];
+        });
     };
 
     // Wrapper to append measurement logs and handle feedback loop
