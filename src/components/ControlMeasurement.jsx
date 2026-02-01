@@ -284,6 +284,79 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                             </div>
                         ))}
                     </div>
+
+                    {/* Operator Registration / Management Box (Fixed) */}
+                    <div className="p-4 border-t border-slate-700 bg-slate-800/30">
+                        {!isOperatorRegistered ? (
+                            <div className="space-y-3">
+                                <h4 className="text-xs font-semibold text-slate-400 uppercase flex items-center gap-2">
+                                    <UserCheck size={12} /> Logga in Operatör
+                                </h4>
+
+                                {/* Operator Select / Login */}
+                                <div className="space-y-2">
+                                    <select
+                                        value={tempOperatorName}
+                                        onChange={(e) => setTempOperatorName(e.target.value)}
+                                        className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-blue-500"
+                                    >
+                                        <option value="">-- Välj Operatör --</option>
+                                        {operatorList.map((op, idx) => (
+                                            <option key={idx} value={op}>{op}</option>
+                                        ))}
+                                    </select>
+
+                                    <button
+                                        onClick={handleRegisterOperator}
+                                        disabled={!tempOperatorName}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white py-1.5 rounded text-xs font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <CheckCircle size={12} /> Logga in
+                                    </button>
+                                </div>
+
+                                {/* Add New Operator Toggle */}
+                                <div className="pt-2 border-t border-slate-700/50">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={newOperatorInput}
+                                            onChange={(e) => setNewOperatorInput(e.target.value)}
+                                            placeholder="Ny operatör..."
+                                            className="flex-1 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300 focus:border-blue-500 outline-none"
+                                        />
+                                        <button
+                                            onClick={handleAddOperator}
+                                            disabled={!newOperatorInput.trim()}
+                                            className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-600/30 px-2 py-1 rounded text-xs transition-colors"
+                                            title="Lägg till i listan"
+                                        >
+                                            <Plus size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-between bg-emerald-900/20 border border-emerald-500/20 rounded p-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-xs ring-1 ring-emerald-500/30">
+                                        {operatorName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Inloggad</div>
+                                        <div className="text-xs text-slate-100 font-medium truncate max-w-[120px]" title={operatorName}>{operatorName}</div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleLogoutOperator}
+                                    className="text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-full p-1.5 transition-all"
+                                    title="Logga ut"
+                                >
+                                    <LogOut size={14} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Main Form */}
