@@ -309,7 +309,8 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                 <thead className="bg-slate-900/80 text-slate-400 font-semibold uppercase text-xs">
                                     <tr>
                                         <th className="p-3 w-16 text-center">ID</th>
-                                        {/** GDT Header Removed */}
+                                        <th className="p-3 w-16 text-center">Typ</th>
+                                        <th className="p-3">Metod</th>
                                         <th className="p-3">Nominell</th>
                                         <th className="p-3">Tolerans (+/-)</th>
                                         <th className="p-3 bg-slate-800/50 border-l border-slate-700/50">Uppmätt Värde</th>
@@ -325,8 +326,15 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                             <tr key={m.id} className="hover:bg-slate-700/30 transition-colors">
                                                 <td className="p-3 text-center font-mono text-slate-500">{m.id}</td>
 
-                                                {/* Type & GDT */}
-                                                {/** GDT Cell Removed */}
+                                                {/* Type (Diameter or Linear) */}
+                                                <td className="p-3 text-center font-bold text-slate-400">
+                                                    {m.isDiameter ? 'Ø' : 'L'}
+                                                </td>
+
+                                                {/* Method / GDT */}
+                                                <td className="p-3 text-xs text-slate-400">
+                                                    {m.gdtType && m.gdtType !== 'none' ? m.gdtType : '-'}
+                                                </td>
 
                                                 {/* Nominal */}
                                                 <td className="p-3">
