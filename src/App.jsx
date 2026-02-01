@@ -196,42 +196,55 @@ function App() {
                 const isAllOk = results.every(r => r.status === 'OK');
 
                 if (reqIndex !== -1) {
-                    const req = currentRequests[reqIndex];
+                    // SYNC MODE: If connected, let Server handle it (Single Source of Truth)
+                    if (socket && connected) {
+                        const payload = {
+                            id: requestId,
+                            results,
+                            controller
+                        };
+                        socket.emit('submit_measurement', payload);
+                        console.log("📡 Sent measurement to server:", payload);
+                        // Local state will update via 'order_completed' event
+                    } else {
+                        // OFFLINE MODE: Legacy Local Logic
+                        const req = currentRequests[reqIndex];
 
-                    // Generate Final Card Serial Number: M-[Drawing]-[Seq]
-                    const existingCount = currentArchives.filter(ar => ar.drawingNumber === req.drawingNumber).length;
-                    const sequence = (existingCount + 1).toString().padStart(3, '0');
-                    generatedSerialNumber = `M-${req.drawingNumber}-${sequence}`;
+                        // Generate Final Card Serial Number: M-[Drawing]-[Seq]
+                        const existingCount = currentArchives.filter(ar => ar.drawingNumber === req.drawingNumber).length;
+                        const sequence = (existingCount + 1).toString().padStart(3, '0');
+                        generatedSerialNumber = `M-${req.drawingNumber}-${sequence}`;
 
-                    // Include measured values in archived request!
-                    const archivedReq = {
-                        ...req,
-                        archivedAt: new Date().toISOString(),
-                        status: isAllOk ? 'OK' : 'FAIL',
-                        serialNumber: generatedSerialNumber,
-                        controller,
-                        timestamp,
-                        parameters: results // Include all measurement results!
-                    };
+                        // Include measured values in archived request!
+                        const archivedReq = {
+                            ...req,
+                            archivedAt: new Date().toISOString(),
+                            status: isAllOk ? 'OK' : 'FAIL',
+                            serialNumber: generatedSerialNumber,
+                            controller,
+                            timestamp,
+                            parameters: results // Include all measurement results!
+                        };
 
-                    setMeasurementRequests(prev => prev.filter(r => r.id !== requestId));
-                    setArchivedRequests(prev => [archivedReq, ...prev]);
-                    console.log("Archived Final Card:", generatedSerialNumber);
+                        setMeasurementRequests(prev => prev.filter(r => r.id !== requestId));
+                        setArchivedRequests(prev => [archivedReq, ...prev]);
+                        console.log("Archived Final Card (Offline):", generatedSerialNumber);
 
-                    // Save measurement card to Inventor Mätkort folder (ONLY ONCE here)
-                    const matkort = {
-                        id: Date.now().toString(),
-                        serialNumber: generatedSerialNumber,
-                        articleNumber: article,
-                        drawingNumber: req.drawingNumber,
-                        controller,
-                        timestamp,
-                        archivedAt: new Date().toISOString(),
-                        status: isAllOk ? 'OK' : 'FAIL',
-                        parameters: results,
-                        xml: xml
-                    };
-                    setMatkortFolder(prev => [matkort, ...prev]);
+                        // Save measurement card to Inventor Mätkort folder
+                        const matkort = {
+                            id: Date.now().toString(),
+                            serialNumber: generatedSerialNumber,
+                            articleNumber: article,
+                            drawingNumber: req.drawingNumber,
+                            controller,
+                            timestamp,
+                            archivedAt: new Date().toISOString(),
+                            status: isAllOk ? 'OK' : 'FAIL',
+                            parameters: results,
+                            xml: xml
+                        };
+                        setMatkortFolder(prev => [matkort, ...prev]);
+                    }
                 }
             }
 

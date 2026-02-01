@@ -337,11 +337,12 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                         const upper = parseSwedishFloat(m.upperTol) || 0;
                                         const lower = parseSwedishFloat(m.lowerTol) || 0;
 
-                                        // Klockren V3: Pure Addition logic.
-                                        // User confirms: Nominal 100, Lower "-0,1" => Limit 99,9.
-                                        // This means: Limit = Nominal + Lower. (100 + (-0.1) = 99.9).
-                                        const minLimit = nom + lower;
-                                        const maxLimit = nom + upper;
+                                        // Klockren V3 Fix: Limits Logic
+                                        // Screenshot confirms UI inputs are magnitudes (+ [0,2] - [0,2]).
+                                        // Min Limit should be Nominal - Lower Magnitude.
+                                        // Max Limit should be Nominal + Upper Magnitude.
+                                        const minLimit = nom - Math.abs(lower);
+                                        const maxLimit = nom + Math.abs(upper);
 
                                         // Status Check based on calculated limits
                                         let status = 'neutral';
