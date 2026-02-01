@@ -216,7 +216,8 @@ function App() {
                         const payload = {
                             id: requestId,
                             results,
-                            controller
+                            controller,
+                            xml // Send raw XML to server
                         };
                         socket.emit('submit_measurement', payload);
                         console.log("📡 Sent measurement to server:", payload);
@@ -238,6 +239,7 @@ function App() {
                             serialNumber: generatedSerialNumber,
                             controller,
                             timestamp,
+                            xml, // Store raw XML offline
                             parameters: results // Include all measurement results!
                         };
 
