@@ -355,16 +355,20 @@ const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matko
                                                 <select
                                                     value={def.gdtType}
                                                     onChange={(e) => updateConfig(idx, 'gdtType', e.target.value)}
-                                                    className="bg-slate-900 border border-slate-600 rounded text-slate-400 text-[10px] w-20"
+                                                    className="bg-slate-900 border border-slate-600 rounded text-slate-200 text-sm font-bold w-12 text-center appearance-none cursor-pointer hover:bg-slate-800"
+                                                    title="GD&T Symbol"
                                                 >
                                                     <option value="none">-</option>
-                                                    <option value="position">Pos</option>
-                                                    <option value="flatness">Flat</option>
-                                                    <option value="concentricity">Conc</option>
-                                                    <option value="parallelism">Para</option>
-                                                    <option value="perpendicularity">Perp</option>
-                                                    <option value="runout">Run</option>
-                                                    <option value="totalRunout">TotRun</option>
+                                                    <option value="position">⌖</option>
+                                                    <option value="flatness">⏥</option>
+                                                    <option value="perpendicularity">⟂</option>
+                                                    <option value="parallelism">∥</option>
+                                                    <option value="concentricity">◎</option>
+                                                    <option value="cylindricity">⌭</option>
+                                                    <option value="roundness">○</option>
+                                                    <option value="straightness">⏤</option>
+                                                    <option value="profile_surface">⌓</option>
+                                                    <option value="runout">↗</option>
                                                 </select>
                                             </td>
                                         </tr>

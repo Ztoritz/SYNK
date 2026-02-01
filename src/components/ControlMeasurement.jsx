@@ -362,8 +362,22 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                                 </td>
 
                                                 {/* Method / GDT */}
-                                                <td className="p-3 text-xs text-slate-400">
-                                                    {m.gdtType && m.gdtType !== 'none' ? m.gdtType : '-'}
+                                                <td className="p-3 text-center">
+                                                    <span className="text-sm font-bold text-slate-300" title={m.gdtType}>
+                                                        {{
+                                                            'none': '-',
+                                                            'position': '⌖',
+                                                            'flatness': '⏥',
+                                                            'perpendicularity': '⟂',
+                                                            'parallelism': '∥',
+                                                            'concentricity': '◎',
+                                                            'cylindricity': '⌭',
+                                                            'roundness': '○',
+                                                            'straightness': '⏤',
+                                                            'profile_surface': '⌓',
+                                                            'runout': '↗'
+                                                        }[m.gdtType] || '-'}
+                                                    </span>
                                                 </td>
 
                                                 {/* Nominal */}
