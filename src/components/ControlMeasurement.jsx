@@ -313,6 +313,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                         <th className="p-3">Metod</th>
                                         <th className="p-3">Nominell</th>
                                         <th className="p-3">Tolerans (+/-)</th>
+                                        <th className="p-3 text-center text-emerald-500/80">Gränser</th>
                                         <th className="p-3 bg-slate-800/50 border-l border-slate-700/50">Uppmätt Värde</th>
                                         <th className="p-3 w-24 text-center">Status</th>
                                     </tr>
@@ -321,7 +322,31 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                     {measurements.map((m, idx) => {
                                         if (m.isActive === false && activeDefinitions) return null; // Hide if not in definition
 
-                                        const status = checkStatus(m);
+                                        // Klockren Method: Parsing Logic
+                                        const parseSwedishFloat = (val) => {
+                                            if (!val) return NaN;
+                                            // 1. Remove all spaces
+                                            // 2. Replace comma with dot
+                                            const clean = String(val).replace(/\s/g, '').replace(/,/g, '.');
+                                            return parseFloat(clean);
+                                        };
+
+                                        const nom = parseSwedishFloat(m.nominal);
+                                        const upper = Math.abs(parseSwedishFloat(m.upperTol) || 0); // Default to 0 if empty
+                                        const lower = Math.abs(parseSwedishFloat(m.lowerTol) || 0);
+
+                                        const minLimit = nom - lower;
+                                        const maxLimit = nom + upper;
+
+                                        // Status Check based on calculated limits
+                                        let status = 'neutral';
+                                        const val = parseSwedishFloat(m.measured);
+
+                                        if (!isNaN(val) && !isNaN(minLimit) && !isNaN(maxLimit)) {
+                                            // Use epsilon for float precision
+                                            status = (val >= minLimit - 0.000001 && val <= maxLimit + 0.000001) ? 'ok' : 'fail';
+                                        }
+
                                         return (
                                             <tr key={m.id} className="hover:bg-slate-700/30 transition-colors">
                                                 <td className="p-3 text-center font-mono text-slate-500">{m.id}</td>
@@ -339,12 +364,12 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                                 {/* Nominal */}
                                                 <td className="p-3">
                                                     <input
-                                                        type="number"
+                                                        type="text"
                                                         value={m.nominal}
                                                         onChange={(e) => handleUpdate(idx, 'nominal', e.target.value)}
                                                         className="w-full bg-transparent border-b border-slate-600 focus:border-indigo-500 outline-none py-1 font-mono text-indigo-100"
                                                         placeholder="0.00"
-                                                        readOnly={true} // Always Readonly as per request
+                                                        readOnly={true}
                                                         disabled
                                                     />
                                                 </td>
@@ -354,7 +379,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                                     <div className="flex items-center gap-1">
                                                         <span className="text-slate-500 text-xs w-4 text-right">+</span>
                                                         <input
-                                                            type="number"
+                                                            type="text"
                                                             value={m.upperTol}
                                                             onChange={(e) => handleUpdate(idx, 'upperTol', e.target.value)}
                                                             className="w-16 bg-slate-900/50 border border-slate-700 rounded px-1 py-0.5 text-xs text-slate-300 text-center"
@@ -362,7 +387,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                                         />
                                                         <span className="text-slate-500 text-xs w-4 text-right">-</span>
                                                         <input
-                                                            type="number"
+                                                            type="text"
                                                             value={m.lowerTol}
                                                             onChange={(e) => handleUpdate(idx, 'lowerTol', e.target.value)}
                                                             className="w-16 bg-slate-900/50 border border-slate-700 rounded px-1 py-0.5 text-xs text-slate-300 text-center"
@@ -371,10 +396,21 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                                     </div>
                                                 </td>
 
+                                                {/* Calculated Limits (Visual Feedback) */}
+                                                <td className="p-3 text-center">
+                                                    {!isNaN(minLimit) && !isNaN(maxLimit) ? (
+                                                        <span className="text-xs font-mono text-emerald-400/80 bg-emerald-900/20 px-2 py-1 rounded border border-emerald-900/30">
+                                                            {minLimit.toFixed(2)} - {maxLimit.toFixed(2)}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs text-slate-600">-</span>
+                                                    )}
+                                                </td>
+
                                                 {/* Measured (Highlighted) */}
                                                 <td className="p-3 border-l border-slate-700/50 bg-slate-800/10">
                                                     <input
-                                                        type="number"
+                                                        type="text"
                                                         value={m.measured}
                                                         onChange={(e) => handleUpdate(idx, 'measured', e.target.value)}
                                                         className={`w-full bg-slate-900 border rounded px-3 py-1.5 font-mono font-bold outline-none transition-colors
