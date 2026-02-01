@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Save, CheckCircle, AlertCircle, FileSpreadsheet, Ruler, Inbox, ArrowRight, UserCheck, X, FileText, FileImage } from 'lucide-react';
+import MeasurementReportCard from './MeasurementReportCard';
 
 const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedRequests = [], onSelectRequest }) => {
     const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' | 'archive'
@@ -505,118 +506,12 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                 </div>
             </div>
 
-            {/* Archive Detail Modal */}
+            {/* Report Card Modal (Updated) */}
             {isArchiveDetailOpen && selectedArchiveItem && (
-                <div className="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-8">
-                    <div className="bg-slate-800 rounded-lg border border-slate-700 w-full max-w-2xl max-h-[80vh] flex flex-col">
-                        <div className="flex justify-between items-center p-4 border-b border-slate-700">
-                            <div>
-                                <h3 className="font-bold text-slate-100 flex items-center gap-2">
-                                    <FileText size={16} className="text-emerald-500" /> Kontrollkort (Arkiv)
-                                </h3>
-                                <div className="flex items-center gap-4 text-xs mt-1">
-                                    <span className="font-mono bg-emerald-900/30 px-2 py-0.5 rounded text-emerald-300 border border-emerald-600/30">
-                                        {selectedArchiveItem.serialNumber}
-                                    </span>
-                                    <span className="text-blue-400 font-mono">{selectedArchiveItem.articleNumber}</span>
-                                    <span className="text-slate-500">{selectedArchiveItem.drawingNumber}</span>
-                                </div>
-                            </div>
-                            <button onClick={() => setIsArchiveDetailOpen(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
-                        </div>
-
-                        {/* Info Header */}
-                        <div className="bg-slate-800/50 rounded-lg p-3 m-4 mb-0 border border-slate-700">
-                            <div className="grid grid-cols-3 gap-4 text-xs">
-                                <div>
-                                    <span className="text-slate-500 block">Kontrollant</span>
-                                    <span className="text-emerald-400 font-medium">{selectedArchiveItem.controller}</span>
-                                </div>
-                                <div>
-                                    <span className="text-slate-500 block">Datum</span>
-                                    <span className="text-slate-300">{new Date(selectedArchiveItem.timestamp).toLocaleDateString('sv-SE')}</span>
-                                </div>
-                                <div>
-                                    <span className="text-slate-500 block">Status</span>
-                                    <span className={`font-bold ${selectedArchiveItem.status === 'OK' ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {selectedArchiveItem.status}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Parameters Table */}
-                        <div className="flex-1 overflow-auto m-4">
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-900 text-slate-400 uppercase font-semibold sticky top-0 z-10">
-                                    <tr>
-                                        <th className="p-2 w-16 text-center">Status</th>
-                                        <th className="p-2">ID</th>
-                                        <th className="p-2 w-16 text-center">Typ</th>
-                                        <th className="p-2">Metod</th>
-                                        <th className="p-2">Nominellt</th>
-                                        <th className="p-2 text-center text-emerald-500/80">Gränser</th>
-                                        <th className="p-2">Uppmätt</th>
-                                        <th className="p-2">Tolerans</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-700">
-                                    {selectedArchiveItem.parameters?.map(p => {
-                                        // Robust parsing for archive view
-                                        const parseSwedishFloat = (val) => {
-                                            if (!val) return NaN;
-                                            const clean = String(val).replace(/\s/g, '').replace(/,/g, '.');
-                                            return parseFloat(clean);
-                                        };
-
-                                        const nom = parseSwedishFloat(p.nominal);
-                                        const upper = parseSwedishFloat(p.upper) || 0;
-                                        const lower = parseSwedishFloat(p.lower) || 0;
-                                        // Klockren V3 logic for archive display
-                                        const minLimit = nom + lower;
-                                        const maxLimit = nom + upper;
-
-                                        return (
-                                            <tr key={p.id} className={p.status === 'OK' ? '' : 'bg-red-900/20'}>
-                                                <td className="p-2 text-center">
-                                                    {p.status === 'OK' ? (
-                                                        <CheckCircle size={14} className="text-emerald-400 mx-auto" />
-                                                    ) : (
-                                                        <AlertCircle size={14} className="text-red-400 mx-auto" />
-                                                    )}
-                                                </td>
-                                                <td className="p-2 font-mono text-slate-500">{p.id}</td>
-                                                <td className="p-2 text-center font-bold text-slate-400">
-                                                    {p.type === 'DIA' || p.isDiameter ? 'Ø' : 'L'}
-                                                </td>
-                                                <td className="p-2 text-slate-400">
-                                                    {p.method && p.method !== 'NONE' ? p.method : '-'}
-                                                </td>
-                                                <td className="p-2 text-slate-300">{p.nominal}</td>
-                                                <td className="p-2 text-center font-mono text-emerald-400/60 bg-emerald-900/10 rounded px-1">
-                                                    {!isNaN(minLimit) ? `${minLimit.toFixed(2)} - ${maxLimit.toFixed(2)}` : '-'}
-                                                </td>
-                                                <td className={`p-2 font-bold font-mono ${p.status === 'OK' ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                    {p.measured}
-                                                </td>
-                                                <td className="p-2 text-slate-500">{p.lower} / {p.upper}</td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div className="flex justify-end gap-2 p-4 border-t border-slate-700">
-                            <button
-                                onClick={() => setIsArchiveDetailOpen(false)}
-                                className="px-4 py-2 rounded text-xs bg-slate-700 hover:bg-slate-600 text-slate-300"
-                            >
-                                Stäng
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <MeasurementReportCard
+                    data={selectedArchiveItem}
+                    onClose={() => setIsArchiveDetailOpen(false)}
+                />
             )}
 
             {/* PDF Drawing Modal */}

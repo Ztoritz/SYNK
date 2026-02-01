@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Package, Plus, Save, Trash2, Database, Ruler, X, Settings, CheckCircle, AlertCircle, FileText, FolderOpen } from 'lucide-react';
+import MeasurementReportCard from './MeasurementReportCard';
 
 const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matkortFolder = [] }) => {
     const [newItem, setNewItem] = useState({
@@ -501,88 +502,12 @@ const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matko
                 </div>
             )}
 
-            {/* Mätkort Detail Modal */}
+            {/* Report Card Modal (Updated) */}
             {isMatkortDetailOpen && selectedMatkort && (
-                <div className="absolute inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex flex-col p-4 animate-in zoom-in-95 duration-200">
-                    <div className="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
-                        <div>
-                            <h3 className="font-bold text-slate-100 flex items-center gap-2">
-                                <FileText size={16} className="text-emerald-500" /> Kontrollkort (Arkiv)
-                            </h3>
-                            <div className="flex items-center gap-4 text-xs mt-1">
-                                <span className="font-mono bg-emerald-900/30 px-2 py-0.5 rounded text-emerald-300 border border-emerald-600/30">
-                                    {selectedMatkort.serialNumber}
-                                </span>
-                                <span className="text-blue-400 font-mono">{selectedMatkort.articleNumber}</span>
-                                <span className="text-slate-500">{selectedMatkort.drawingNumber}</span>
-                            </div>
-                        </div>
-                        <button onClick={() => setIsMatkortDetailOpen(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
-                    </div>
-
-                    {/* Info Header */}
-                    <div className="bg-slate-800/50 rounded-lg p-3 mb-4 border border-slate-700">
-                        <div className="grid grid-cols-3 gap-4 text-xs">
-                            <div>
-                                <span className="text-slate-500 block">Kontrollant</span>
-                                <span className="text-emerald-400 font-medium">{selectedMatkort.controller}</span>
-                            </div>
-                            <div>
-                                <span className="text-slate-500 block">Datum</span>
-                                <span className="text-slate-300">{new Date(selectedMatkort.timestamp).toLocaleDateString('sv-SE')}</span>
-                            </div>
-                            <div>
-                                <span className="text-slate-500 block">Status</span>
-                                <span className={`font-bold ${selectedMatkort.status === 'OK' ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {selectedMatkort.status}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Parameters Table */}
-                    <div className="flex-1 overflow-auto bg-slate-800 rounded border border-slate-700">
-                        <table className="w-full text-left text-xs">
-                            <thead className="bg-slate-900 text-slate-400 uppercase font-semibold sticky top-0 z-10">
-                                <tr>
-                                    <th className="p-2 w-16 text-center">Status</th>
-                                    <th className="p-2">ID</th>
-                                    <th className="p-2">Nominellt</th>
-                                    <th className="p-2">Uppmätt</th>
-                                    <th className="p-2">Tolerans</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-700">
-                                {selectedMatkort.parameters?.map(p => (
-                                    <tr key={p.id} className={p.status === 'OK' ? '' : 'bg-red-900/20'}>
-                                        <td className="p-2 text-center">
-                                            {p.status === 'OK' ? (
-                                                <CheckCircle size={14} className="text-emerald-400 mx-auto" />
-                                            ) : (
-                                                <AlertCircle size={14} className="text-red-400 mx-auto" />
-                                            )}
-                                        </td>
-                                        <td className="p-2 font-mono text-slate-500">{p.id}</td>
-                                        <td className="p-2 text-slate-300">{p.nominal}</td>
-                                        <td className={`p-2 font-bold font-mono ${p.status === 'OK' ? 'text-emerald-400' : 'text-red-400'}`}>
-                                            {p.measured}
-                                        </td>
-                                        <td className="p-2 text-slate-500">{p.lower} / {p.upper}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="flex justify-end gap-2 mt-4 pt-2 border-t border-slate-700">
-                        <button
-                            onClick={() => setIsMatkortDetailOpen(false)}
-                            className="px-4 py-2 rounded text-xs bg-slate-700 hover:bg-slate-600 text-slate-300"
-                        >
-                            Stäng
-                        </button>
-                    </div>
-                </div>
+                <MeasurementReportCard
+                    data={selectedMatkort}
+                    onClose={() => setIsMatkortDetailOpen(false)}
+                />
             )}
         </div>
     );
