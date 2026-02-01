@@ -61,7 +61,7 @@ function App() {
         newSocket.on('init_state', (data) => {
             console.log("Initial State:", data);
             setMeasurementRequests(data.activeOrders || []);
-            // setArchivedRequests(data.archivedOrders || []); // Maybe?
+            setArchivedRequests(data.archivedOrders || []); // Sync Archive from Server!
         });
 
         // 1. Order Created (Broadcasted back to us, or from others)
@@ -73,14 +73,21 @@ function App() {
             });
         });
 
-        // 2. Order Completed (From Mobile)
+        // 2. Order Completed (From Mobile or SYNK)
         newSocket.on('order_completed', (completedOrder) => {
             console.log("Order Completed:", completedOrder);
 
-            // Log for "XML View" simulation
-            setXmlLog(`Received Result via Socket:\nID: ${completedOrder.id}\nStatus: ${completedOrder.status}`);
+            // Update Active Requests (Remove)
+            setMeasurementRequests(prev => prev.filter(r => r.id !== completedOrder.id));
 
-            // Update local state (Move from Pending to Archive)
+            // Update Archive (Add to top)
+            setArchivedRequests(prev => {
+                if (prev.find(o => o.id === completedOrder.id)) return prev;
+                return [completedOrder, ...prev];
+            });
+
+            // Vault/Logic updates can still happen here if needed, 
+            // but the SOURCE OF TRUTH is now the socket event.
             handleOrderCompletion(completedOrder);
         });
 
