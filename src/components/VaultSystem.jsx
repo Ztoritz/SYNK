@@ -293,20 +293,56 @@ const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matko
                                                 )}
                                             </td>
                                             <td className="p-2">
-                                                <input
-                                                    type="text"
-                                                    value={def.upperTol}
-                                                    onChange={(e) => updateConfig(idx, 'upperTol', e.target.value)}
-                                                    className="w-12 bg-slate-900 border border-slate-600 rounded px-1 py-0.5 text-slate-400"
-                                                />
+                                                <div className="relative w-16">
+                                                    <input
+                                                        type="text"
+                                                        value={def.upperTol}
+                                                        onChange={(e) => updateConfig(idx, 'upperTol', e.target.value)}
+                                                        className="w-full bg-slate-900 border border-slate-600 rounded-l px-1 py-0.5 text-slate-400 text-xs pr-4 focus:outline-none focus:border-amber-500"
+                                                    />
+                                                    <div className="absolute right-0 top-0 bottom-0 flex flex-col border-l border-slate-600">
+                                                        <button
+                                                            className="h-1/2 px-1 hover:bg-slate-700 text-[8px] text-slate-400 flex items-center justify-center bg-slate-800 rounded-tr"
+                                                            onClick={() => {
+                                                                const val = parseFloat(String(def.upperTol).replace(',', '.')) || 0;
+                                                                updateConfig(idx, 'upperTol', (val + 0.1).toFixed(1).replace('.', ','));
+                                                            }}
+                                                        >▲</button>
+                                                        <button
+                                                            className="h-1/2 px-1 hover:bg-slate-700 text-[8px] text-slate-400 flex items-center justify-center bg-slate-800 border-t border-slate-600 rounded-br"
+                                                            onClick={() => {
+                                                                const val = parseFloat(String(def.upperTol).replace(',', '.')) || 0;
+                                                                updateConfig(idx, 'upperTol', (val - 0.1).toFixed(1).replace('.', ','));
+                                                            }}
+                                                        >▼</button>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className="p-2">
-                                                <input
-                                                    type="text"
-                                                    value={def.lowerTol}
-                                                    onChange={(e) => updateConfig(idx, 'lowerTol', e.target.value)}
-                                                    className="w-12 bg-slate-900 border border-slate-600 rounded px-1 py-0.5 text-slate-400"
-                                                />
+                                                <div className="relative w-16">
+                                                    <input
+                                                        type="text"
+                                                        value={def.lowerTol}
+                                                        onChange={(e) => updateConfig(idx, 'lowerTol', e.target.value)}
+                                                        className="w-full bg-slate-900 border border-slate-600 rounded-l px-1 py-0.5 text-slate-400 text-xs pr-4 focus:outline-none focus:border-amber-500"
+                                                    />
+                                                    <div className="absolute right-0 top-0 bottom-0 flex flex-col border-l border-slate-600">
+                                                        <button
+                                                            className="h-1/2 px-1 hover:bg-slate-700 text-[8px] text-slate-400 flex items-center justify-center bg-slate-800 rounded-tr"
+                                                            onClick={() => {
+                                                                const val = parseFloat(String(def.lowerTol).replace(',', '.')) || 0;
+                                                                updateConfig(idx, 'lowerTol', (val + 0.1).toFixed(1).replace('.', ','));
+                                                            }}
+                                                        >▲</button>
+                                                        <button
+                                                            className="h-1/2 px-1 hover:bg-slate-700 text-[8px] text-slate-400 flex items-center justify-center bg-slate-800 border-t border-slate-600 rounded-br"
+                                                            onClick={() => {
+                                                                const val = parseFloat(String(def.lowerTol).replace(',', '.')) || 0;
+                                                                updateConfig(idx, 'lowerTol', (val - 0.1).toFixed(1).replace('.', ','));
+                                                            }}
+                                                        >▼</button>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className="p-2 text-center">
                                                 <input

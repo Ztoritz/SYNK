@@ -383,21 +383,62 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                                 <td className="p-3">
                                                     <div className="flex items-center gap-1">
                                                         <span className="text-slate-500 text-xs w-4 text-right">+</span>
-                                                        <input
-                                                            type="text"
-                                                            value={m.upperTol}
-                                                            onChange={(e) => handleUpdate(idx, 'upperTol', e.target.value)}
-                                                            className="w-16 bg-slate-900/50 border border-slate-700 rounded px-1 py-0.5 text-xs text-slate-300 text-center"
-                                                            readOnly={!!activeDefinitions}
-                                                        />
+                                                        <div className="relative w-16">
+                                                            <input
+                                                                type="text"
+                                                                value={m.upperTol}
+                                                                onChange={(e) => handleUpdate(idx, 'upperTol', e.target.value)}
+                                                                className="w-full bg-slate-900/50 border border-slate-700 rounded-l px-1 py-0.5 text-xs text-slate-300 text-center pr-4 focus:outline-none focus:border-amber-500"
+                                                                readOnly={!!activeDefinitions}
+                                                            />
+                                                            {!activeDefinitions && (
+                                                                <div className="absolute right-0 top-0 bottom-0 flex flex-col border-l border-slate-700">
+                                                                    <button
+                                                                        className="h-1/2 px-1 hover:bg-slate-600 text-[10px] text-slate-400 flex items-center justify-center bg-slate-800 rounded-tr"
+                                                                        onClick={() => {
+                                                                            const val = parseFloat(String(m.upperTol).replace(',', '.')) || 0;
+                                                                            handleUpdate(idx, 'upperTol', (val + 0.1).toFixed(1).replace('.', ','));
+                                                                        }}
+                                                                    >▲</button>
+                                                                    <button
+                                                                        className="h-1/2 px-1 hover:bg-slate-600 text-[10px] text-slate-400 flex items-center justify-center bg-slate-800 border-t border-slate-700 rounded-br"
+                                                                        onClick={() => {
+                                                                            const val = parseFloat(String(m.upperTol).replace(',', '.')) || 0;
+                                                                            handleUpdate(idx, 'upperTol', (val - 0.1).toFixed(1).replace('.', ','));
+                                                                        }}
+                                                                    >▼</button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
                                                         <span className="text-slate-500 text-xs w-4 text-right">-</span>
-                                                        <input
-                                                            type="text"
-                                                            value={m.lowerTol}
-                                                            onChange={(e) => handleUpdate(idx, 'lowerTol', e.target.value)}
-                                                            className="w-16 bg-slate-900/50 border border-slate-700 rounded px-1 py-0.5 text-xs text-slate-300 text-center"
-                                                            readOnly={!!activeDefinitions}
-                                                        />
+                                                        <div className="relative w-16">
+                                                            <input
+                                                                type="text"
+                                                                value={m.lowerTol}
+                                                                onChange={(e) => handleUpdate(idx, 'lowerTol', e.target.value)}
+                                                                className="w-full bg-slate-900/50 border border-slate-700 rounded-l px-1 py-0.5 text-xs text-slate-300 text-center pr-4 focus:outline-none focus:border-amber-500"
+                                                                readOnly={!!activeDefinitions}
+                                                            />
+                                                            {!activeDefinitions && (
+                                                                <div className="absolute right-0 top-0 bottom-0 flex flex-col border-l border-slate-700">
+                                                                    <button
+                                                                        className="h-1/2 px-1 hover:bg-slate-600 text-[10px] text-slate-400 flex items-center justify-center bg-slate-800 rounded-tr"
+                                                                        onClick={() => {
+                                                                            const val = parseFloat(String(m.lowerTol).replace(',', '.')) || 0;
+                                                                            handleUpdate(idx, 'lowerTol', (val + 0.1).toFixed(1).replace('.', ','));
+                                                                        }}
+                                                                    >▲</button>
+                                                                    <button
+                                                                        className="h-1/2 px-1 hover:bg-slate-600 text-[10px] text-slate-400 flex items-center justify-center bg-slate-800 border-t border-slate-700 rounded-br"
+                                                                        onClick={() => {
+                                                                            const val = parseFloat(String(m.lowerTol).replace(',', '.')) || 0;
+                                                                            handleUpdate(idx, 'lowerTol', (val - 0.1).toFixed(1).replace('.', ','));
+                                                                        }}
+                                                                    >▼</button>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </td>
 
