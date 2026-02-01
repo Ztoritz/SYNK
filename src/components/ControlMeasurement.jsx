@@ -11,9 +11,8 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
     const [searchText, setSearchText] = useState('');
 
-    const [operatorName, setOperatorName] = useState('');
-    const [isOperatorRegistered, setIsOperatorRegistered] = useState(false);
-    const [tempOperatorName, setTempOperatorName] = useState('');
+    const [isSigningModalOpen, setIsSigningModalOpen] = useState(false);
+    const [signingOperator, setSigningOperator] = useState('');
     const [newOperatorInput, setNewOperatorInput] = useState('');
 
     // Initialize operator list from localStorage or defaults
@@ -33,18 +32,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
         setOperatorList(newList);
         localStorage.setItem('simAkers_operators', JSON.stringify(newList));
         setNewOperatorInput('');
-    };
-
-    const handleRegisterOperator = () => {
-        if (!tempOperatorName) return;
-        setOperatorName(tempOperatorName);
-        setIsOperatorRegistered(true);
-    };
-
-    const handleLogoutOperator = () => {
-        setOperatorName('');
-        setIsOperatorRegistered(false);
-        setTempOperatorName('');
+        setSigningOperator(newOperatorInput.trim()); // Auto-select new operator
     };
 
     const [header, setHeader] = useState({
@@ -139,9 +127,9 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
         setMeasurements(newM);
     };
 
-    const generateXml = () => {
-        if (!isOperatorRegistered) {
-            alert("Operatör saknas! Vänligen registrera dig i menyn till vänster.");
+    const generateXml = (controllerName) => {
+        if (!controllerName) {
+            alert("Du måste välja en operatör för att signera!");
             return;
         }
 
@@ -150,7 +138,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
   <RequestId>${currentRequestId || ''}</RequestId>
   <ArticleNumber>${header.articleNumber || 'UNKNOWN'}</ArticleNumber>
   <DrawingNumber>${header.drawingNumber || 'UNKNOWN'}</DrawingNumber>
-  <Controller>${operatorName}</Controller>
+  <Controller>${controllerName}</Controller>
   <Results>
 `;
 
@@ -180,6 +168,16 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
         setMeasurements(Array.from({ length: 10 }, (_, i) => ({ id: `M${i + 1}`, isActive: false })));
         setHeader({ articleNumber: '', drawingNumber: '' });
         setCurrentRequestId(null);
+        setIsSigningModalOpen(false); // Close modal
+        setSigningOperator(''); // Reset selection
+    };
+
+    const handleConfirmSign = () => {
+        if (!signingOperator) {
+            alert("Välj operatör!");
+            return;
+        }
+        generateXml(signingOperator);
     };
 
     const displayedRequests = (activeTab === 'inbox' ? incomingRequests : archivedRequests).filter(req => {
@@ -289,77 +287,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                     </div>
 
                     {/* Operator Registration / Management Box (Fixed) */}
-                    <div className="p-4 border-t border-slate-700 bg-slate-800/30">
-                        {!isOperatorRegistered ? (
-                            <div className="space-y-3">
-                                <h4 className="text-xs font-semibold text-slate-400 uppercase flex items-center gap-2">
-                                    <UserCheck size={12} /> Logga in Operatör
-                                </h4>
-
-                                {/* Operator Select / Login */}
-                                <div className="space-y-2">
-                                    <select
-                                        value={tempOperatorName}
-                                        onChange={(e) => setTempOperatorName(e.target.value)}
-                                        className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-blue-500"
-                                    >
-                                        <option value="">-- Välj Operatör --</option>
-                                        {operatorList.map((op, idx) => (
-                                            <option key={idx} value={op}>{op}</option>
-                                        ))}
-                                    </select>
-
-                                    <button
-                                        onClick={handleRegisterOperator}
-                                        disabled={!tempOperatorName}
-                                        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white py-1.5 rounded text-xs font-medium transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <CheckCircle size={12} /> Logga in
-                                    </button>
-                                </div>
-
-                                {/* Add New Operator Toggle */}
-                                <div className="pt-2 border-t border-slate-700/50">
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={newOperatorInput}
-                                            onChange={(e) => setNewOperatorInput(e.target.value)}
-                                            placeholder="Ny operatör..."
-                                            className="flex-1 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300 focus:border-blue-500 outline-none"
-                                        />
-                                        <button
-                                            onClick={handleAddOperator}
-                                            disabled={!newOperatorInput.trim()}
-                                            className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-600/30 px-2 py-1 rounded text-xs transition-colors"
-                                            title="Lägg till i listan"
-                                        >
-                                            <Plus size={14} />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-between bg-emerald-900/20 border border-emerald-500/20 rounded p-2">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-xs ring-1 ring-emerald-500/30">
-                                        {operatorName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                                    </div>
-                                    <div className="overflow-hidden">
-                                        <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Inloggad</div>
-                                        <div className="text-xs text-slate-100 font-medium truncate max-w-[120px]" title={operatorName}>{operatorName}</div>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={handleLogoutOperator}
-                                    className="text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-full p-1.5 transition-all"
-                                    title="Logga ut"
-                                >
-                                    <LogOut size={14} />
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    {/* Operator Registration REMOVED - Now in Modal */}
                 </div>
 
                 {/* Main Form */}
@@ -379,13 +307,9 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
 
                             <div className="flex items-center gap-3">
                                 <button
-                                    onClick={generateXml}
-                                    disabled={!isOperatorRegistered}
-                                    className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors shadow-lg 
-                                    ${isOperatorRegistered
-                                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
-                                            : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
-                                    title={!isOperatorRegistered ? "Registrera operatör först" : "Spara mätning"}
+                                    onClick={() => setIsSigningModalOpen(true)}
+                                    className="px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors shadow-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20"
+                                    title="Signera och spara mätning"
                                 >
                                     <Save size={18} /> Spara
                                 </button>
@@ -701,6 +625,79 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                 className="px-4 py-2 rounded text-xs bg-slate-700 hover:bg-slate-600 text-slate-300"
                             >
                                 Stäng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Signing Modal */}
+            {isSigningModalOpen && (
+                <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-slate-900 rounded-lg border border-slate-700 w-full max-w-sm shadow-2xl p-6 animate-in zoom-in-95 duration-200">
+                        <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2 mb-4">
+                            <UserCheck className="text-emerald-500" /> Signera Kontrollmätning
+                        </h3>
+
+                        <p className="text-sm text-slate-400 mb-6">
+                            Vänligen ange vem som utförde kontrollmätningen för att spara resultaten.
+                        </p>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Välj Operatör</label>
+                                <select
+                                    value={signingOperator}
+                                    onChange={(e) => setSigningOperator(e.target.value)}
+                                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                >
+                                    <option value="">-- Välj i listan --</option>
+                                    {operatorList.map((op, idx) => (
+                                        <option key={idx} value={op}>{op}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-slate-800"></div>
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-slate-900 px-2 text-slate-500">Eller lägg till ny</span>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={newOperatorInput}
+                                    onChange={(e) => setNewOperatorInput(e.target.value)}
+                                    placeholder="Nytt namn..."
+                                    className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:border-emerald-500 outline-none"
+                                />
+                                <button
+                                    onClick={handleAddOperator}
+                                    disabled={!newOperatorInput.trim()}
+                                    className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 border border-emerald-600/30 px-3 py-2 rounded-lg text-sm transition-colors"
+                                >
+                                    <Plus size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-8">
+                            <button
+                                onClick={() => setIsSigningModalOpen(false)}
+                                className="flex-1 py-2.5 rounded-lg font-medium text-slate-400 hover:bg-slate-800 transition-colors"
+                            >
+                                Avbryt
+                            </button>
+                            <button
+                                onClick={handleConfirmSign}
+                                disabled={!signingOperator}
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white py-2.5 rounded-lg font-medium shadow-lg shadow-emerald-600/20 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <CheckCircle size={18} /> Signera & Spara
                             </button>
                         </div>
                     </div>
