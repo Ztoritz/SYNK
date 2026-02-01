@@ -11,12 +11,27 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
     const [searchText, setSearchText] = useState('');
 
+    const [operatorName, setOperatorName] = useState('');
+    const [isOperatorRegistered, setIsOperatorRegistered] = useState(false);
+    const [tempOperatorName, setTempOperatorName] = useState('');
+
+    const handleRegisterOperator = () => {
+        if (!tempOperatorName.trim()) return;
+        setOperatorName(tempOperatorName);
+        setIsOperatorRegistered(true);
+    };
+
+    const handleLogoutOperator = () => {
+        setOperatorName('');
+        setIsOperatorRegistered(false);
+        setTempOperatorName('');
+    };
+
     const [header, setHeader] = useState({
         articleNumber: '',
         drawingNumber: ''
     });
 
-    const [selectedController, setSelectedController] = useState('');
     const [activeDefinitions, setActiveDefinitions] = useState(null); // If null, defined by user
 
     const [measurements, setMeasurements] = useState(
@@ -105,8 +120,8 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
     };
 
     const generateXml = () => {
-        if (!selectedController) {
-            alert("Signatur saknas! Vänligen välj en kontrollant innan du sparar.");
+        if (!isOperatorRegistered) {
+            alert("Operatör saknas! Vänligen registrera dig i menyn till vänster.");
             return;
         }
 
@@ -115,7 +130,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
   <RequestId>${currentRequestId || ''}</RequestId>
   <ArticleNumber>${header.articleNumber || 'UNKNOWN'}</ArticleNumber>
   <DrawingNumber>${header.drawingNumber || 'UNKNOWN'}</DrawingNumber>
-  <Controller>${selectedController} (${selectedController === 'NJA' ? 'Niklas Jalvemyr' : 'Dan Notesjö'})</Controller>
+  <Controller>${operatorName}</Controller>
   <Results>
 `;
 
@@ -142,7 +157,6 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
         alert(`Mätkort för ${header.articleNumber} har sparats till Arkivet!`);
 
         // Reset after sync
-        setSelectedController('');
         setMeasurements(Array.from({ length: 10 }, (_, i) => ({ id: `M${i + 1}`, isActive: false })));
         setHeader({ articleNumber: '', drawingNumber: '' });
         setCurrentRequestId(null);
@@ -268,26 +282,14 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                             </div>
 
                             <div className="flex items-center gap-3">
-                                {/* Controller Signature Dropdown */}
-                                <div className="flex items-center gap-2 bg-slate-800 rounded px-2 py-1 border border-slate-600">
-                                    <UserCheck size={16} className={selectedController ? 'text-emerald-400' : 'text-slate-500'} />
-                                    <select
-                                        value={selectedController}
-                                        onChange={(e) => setSelectedController(e.target.value)}
-                                        className="bg-transparent text-xs text-slate-200 outline-none"
-                                    >
-                                        <option value="">-- Signera --</option>
-                                        <option value="Niklas Jalvemyr">Niklas Jalvemyr</option>
-                                        <option value="Olle Ljungberg">Olle Ljungberg</option>
-                                    </select>
-                                </div>
-
                                 <button
                                     onClick={generateXml}
+                                    disabled={!isOperatorRegistered}
                                     className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors shadow-lg 
-                                    ${selectedController
+                                    ${isOperatorRegistered
                                             ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
-                                            : 'bg-slate-600 hover:bg-slate-500 text-slate-200'}`}
+                                            : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
+                                    title={!isOperatorRegistered ? "Registrera operatör först" : "Spara mätning"}
                                 >
                                     <Save size={18} /> Spara
                                 </button>

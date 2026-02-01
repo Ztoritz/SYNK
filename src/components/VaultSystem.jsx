@@ -236,12 +236,6 @@ const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matko
                             </h3>
                             <div className="flex items-center gap-4 text-xs">
                                 <span className="text-blue-400 font-mono">{configItem.artikelnummer}</span>
-                                {configItem.lastResult && (
-                                    <span className="flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                                        <CheckCircle size={10} />
-                                        Signerad: {configItem.lastResult.controller} ({new Date(configItem.lastResult.timestamp).toLocaleDateString()})
-                                    </span>
-                                )}
                             </div>
                         </div>
                         <button onClick={() => setIsConfigOpen(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
