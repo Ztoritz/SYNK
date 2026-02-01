@@ -337,10 +337,10 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                         const upper = parseSwedishFloat(m.upperTol) || 0;
                                         const lower = parseSwedishFloat(m.lowerTol) || 0;
 
-                                        // Calculate limits based on column headers:
-                                        // Header is "+", so Add Upper.
-                                        // Header is "-", so Subtract Lower.
-                                        const minLimit = nom - lower;
+                                        // Klockren V3: Pure Addition logic.
+                                        // User confirms: Nominal 100, Lower "-0,1" => Limit 99,9.
+                                        // This means: Limit = Nominal + Lower. (100 + (-0.1) = 99.9).
+                                        const minLimit = nom + lower;
                                         const maxLimit = nom + upper;
 
                                         // Status Check based on calculated limits
