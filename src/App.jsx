@@ -386,20 +386,22 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
 
     const handleReset = () => {
         if (confirm('Rensa all historik och återställ mätningar? (Artiklar och Konfiguration sparas)')) {
-            // Clear Requests and Archives
-            setMeasurementRequests([]);
-            setArchivedRequests([]);
-
-            // Clear Results from Vault Items but KEEP the Items
+            // 1. Clear Local Vault History
             setVaultItems(prev => prev.map(item => {
-                // Destructure to remove measurement data
                 const { lastResult, measurementHistory, ...rest } = item;
-                // Return item without result history
                 return rest;
             }));
 
-            // We do NOT clear 'measurementDefs' or 'movexItems', preserving the setup
-            setXmlLog('');
+            setXmlLog('System Reset Initiated...');
+
+            // 2. Clear Server State (which will broadcast empty lists back to us)
+            if (socket && connected) {
+                socket.emit('reset_state');
+            } else {
+                // Fallback for offline mode
+                setMeasurementRequests([]);
+                setArchivedRequests([]);
+            }
         }
     };
 
