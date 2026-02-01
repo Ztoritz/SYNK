@@ -18,7 +18,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
     // Initialize operator list from localStorage or defaults
     const [operatorList, setOperatorList] = useState(() => {
         const saved = localStorage.getItem('simAkers_operators');
-        return saved ? JSON.parse(saved) : ['Niklas Jalvemyr', 'Dan Notesjö', 'Olle Ljungberg'];
+        return saved ? JSON.parse(saved) : ['Niklas Jalvemyr', 'Olle Ljungberg'];
     });
 
     // Update localStorage when list changes
