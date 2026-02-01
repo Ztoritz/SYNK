@@ -445,7 +445,7 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
                         <div className="w-8 h-8 rounded bg-gradient-to-br from-amber-500 to-blue-600 flex items-center justify-center text-white font-bold">
                             <ArrowRightLeft size={18} />
                         </div>
-                        <h1 className="font-semibold text-lg tracking-tight">Vault <span className="text-slate-500 mx-1">↔</span> Movex Integration</h1>
+                        <h1 className="font-semibold text-lg tracking-tight">Flödessimulator</h1>
                     </div>
 
                     {/* Navigation Menu */}
@@ -487,8 +487,8 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
             {/* Main Content Area */}
             {currentView === 'configurator' ? (
                 <div className="flex-1 flex overflow-hidden">
-                    {/* Vault Side (Left) */}
-                    <div className="w-1/3 min-w-[300px]">
+                    {/* Vault Side (Left) - Expanded to 40% */}
+                    <div className="w-[40%] min-w-[300px]">
                         <VaultSystem
                             items={vaultItems}
                             onUpdateItems={setVaultItems}
@@ -498,14 +498,14 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
                         />
                     </div>
 
-                    {/* XML Viewer (Center) */}
-                    <div className="w-1/3 border-r border-slate-700 bg-slate-950 flex flex-col">
+                    {/* XML Viewer (Center) - Shrunk to 20% */}
+                    <div className="w-[20%] border-r border-slate-700 bg-slate-950 flex flex-col">
                         <div className="p-4 border-b border-slate-700 bg-slate-900/30 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Code className="text-slate-500" />
-                                <h3 className="font-semibold text-slate-300">XML Exchange Channel</h3>
+                                <h3 className="font-semibold text-slate-300">XML Channel</h3>
                             </div>
-                            {xmlLog && <span className="text-xs text-slate-500">Last Sync: {new Date().toLocaleTimeString()}</span>}
+                            {xmlLog && <span className="text-xs text-slate-500">{new Date().toLocaleTimeString()}</span>}
                         </div>
                         <div className="flex-1 p-4 overflow-auto font-mono text-xs">
                             {xmlLog ? (
@@ -513,15 +513,14 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
                             ) : (
                                 <div className="h-full flex flex-col items-center justify-center text-slate-600">
                                     <ArrowRightLeft className="mb-2 opacity-20" size={48} />
-                                    <p>Waiting for synchronization...</p>
-                                    <p className="text-[10px] opacity-70 mt-1">Initiate sync from either system</p>
+                                    <p className="text-center">Waiting for sync...</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* Movex Side (Right) */}
-                    <div className="w-1/3 min-w-[300px]">
+                    {/* Movex Side (Right) - Expanded to 40% */}
+                    <div className="w-[40%] min-w-[300px]">
                         <MovexSystem items={movexItems} onUpdateItems={setMovexItems} onSync={syncToVault} />
                     </div>
                 </div>

@@ -396,8 +396,6 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                                         onChange={(e) => handleUpdate(idx, 'nominal', e.target.value)}
                                                         className="w-full bg-transparent border-b border-slate-600 focus:border-indigo-500 outline-none py-1 font-mono text-indigo-100"
                                                         placeholder="0.00"
-                                                        readOnly={true}
-                                                        disabled
                                                     />
                                                 </td>
 
