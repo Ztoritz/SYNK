@@ -78,13 +78,17 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
     const checkStatus = (m) => {
         if (!m.isActive && activeDefinitions) return 'skip';
         if (m.nominal === '' || m.measured === '') return 'neutral';
-        const nom = parseFloat(m.nominal);
-        const val = parseFloat(m.measured);
+
+        // Sanitize inputs (replace comma with dot)
+        const sanitize = (val) => String(val).replace(',', '.');
+
+        const nom = parseFloat(sanitize(m.nominal));
+        const val = parseFloat(sanitize(m.measured));
 
         // Ensure robust tolerance handling: 
         // Upper is always +Abs(val), Lower is always -Abs(val)
-        const upper = Math.abs(parseFloat(m.upperTol));
-        const lower = -Math.abs(parseFloat(m.lowerTol));
+        const upper = Math.abs(parseFloat(sanitize(m.upperTol)));
+        const lower = -Math.abs(parseFloat(sanitize(m.lowerTol)));
 
         if (isNaN(nom) || isNaN(val) || isNaN(upper) || isNaN(lower)) return 'neutral';
 
