@@ -46,8 +46,8 @@ const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matko
                 id: `M${i + 1}`,
                 active: false,
                 nominal: '',
-                upperTol: '+0,0',
-                lowerTol: '-0,0',
+                upperTol: '0,0',
+                lowerTol: '0,0',
                 isDiameter: false,
                 gdtType: 'none',
             }));
