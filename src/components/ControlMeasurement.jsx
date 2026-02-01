@@ -366,20 +366,20 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                                     {(() => {
                                                         const GDT_INFO = {
                                                             'none': { s: '-', t: 'Ingen formtolerans' },
-                                                            'position': { s: '⌖', t: 'Position (Position) - Controls location relative to datums' },
-                                                            'flatness': { s: '⏥', t: 'Planhet (Flatness) - Controls surface deviation from a perfect plane' },
-                                                            'perpendicularity': { s: '⟂', t: 'Vinkelräthet (Perpendicularity) - Controls 90° angle deviation' },
-                                                            'parallelism': { s: '∥', t: 'Parallellitet (Parallelism) - Controls equidistant deviation' },
-                                                            'concentricity': { s: '◎', t: 'Koncentricitet (Concentricity) - Controls center axis deviation' },
-                                                            'cylindricity': { s: '⌭', t: 'Cylindricitet (Cylindricity) - Controls deviations of a cylinder' },
-                                                            'roundness': { s: '○', t: 'Rundhet (Roundness) - Controls deviations of a circle' },
-                                                            'straightness': { s: '⏤', t: 'Rakhet (Straightness) - Controls linear deviation' },
-                                                            'profile_surface': { s: '⌓', t: 'Ytprofil (Profile of Surface) - Controls surface form' },
-                                                            'runout': { s: '↗', t: 'Kast (Runout) - Controls variation during rotation' }
+                                                            'position': { s: '⌖', t: 'Position\nKontrollerar avvikelse från teoretisk exakt position.' },
+                                                            'flatness': { s: '⏥', t: 'Planhet\nKontrollerar ytan så den ligger mellan två parallella plan.' },
+                                                            'perpendicularity': { s: '⟂', t: 'Vinkelräthet\nKontrollerar att ytan/axeln är 90° mot referens.' },
+                                                            'parallelism': { s: '∥', t: 'Parallellitet\nKontrollerar att ytan/axeln är parallell med referens.' },
+                                                            'concentricity': { s: '◎', t: 'Koncentricitet\nKontrollerar att centrumaxeln sammanfaller med referensaxel.' },
+                                                            'cylindricity': { s: '⌭', t: 'Cylindricitet\nKontrollerar hur cylindrisk en yta är (både rundhet och rakhet).' },
+                                                            'roundness': { s: '○', t: 'Rundhet\nKontrollerar cirkulär form (avvikelse från perfekt cirkel).' },
+                                                            'straightness': { s: '⏤', t: 'Rakhet\nKontrollerar avvikelse från en rät linje.' },
+                                                            'profile_surface': { s: '⌓', t: 'Ytprofil\nKontrollerar formen på en yta jämfört med nominell form.' },
+                                                            'runout': { s: '↗', t: 'Kast (Runout)\nKontrollerar total variation vid ett varvs rotation.' }
                                                         };
                                                         const info = GDT_INFO[m.gdtType] || GDT_INFO['none'];
                                                         return (
-                                                            <span className="text-sm font-bold text-slate-300 cursor-help border-b border-dotted border-slate-600 pb-0.5" title={info.t}>
+                                                            <span className="text-2xl font-bold text-slate-200 cursor-help border-b border-dotted border-slate-600 pb-0.5 inline-block" title={info.t}>
                                                                 {info.s}
                                                             </span>
                                                         );
