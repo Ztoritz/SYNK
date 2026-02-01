@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Save, CheckCircle, AlertCircle, FileSpreadsheet, Ruler, Inbox, ArrowRight, UserCheck, X, FileText, FileImage, Plus, LogOut } from 'lucide-react';
+import { Save, CheckCircle, AlertCircle, FileSpreadsheet, Ruler, Inbox, ArrowRight, UserCheck, X, FileText, FileImage, Plus, LogOut, Trash2 } from 'lucide-react';
 import MeasurementReportCard from './MeasurementReportCard';
 
-const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedRequests = [], onSelectRequest }) => {
+const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedRequests = [], onSelectRequest, onDeleteOrder }) => {
     const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' | 'archive'
     const [currentRequestId, setCurrentRequestId] = useState(null);
     const [isArchiveDetailOpen, setIsArchiveDetailOpen] = useState(false);
@@ -33,6 +33,15 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
         localStorage.setItem('simAkers_operators', JSON.stringify(newList));
         setNewOperatorInput('');
         setSigningOperator(newOperatorInput.trim()); // Auto-select new operator
+    };
+
+    const handleRemoveOperator = (opName) => {
+        if (confirm(`Ta bort ${opName} från listan?`)) {
+            const newList = operatorList.filter(o => o !== opName);
+            setOperatorList(newList);
+            localStorage.setItem('simAkers_operators', JSON.stringify(newList));
+            if (signingOperator === opName) setSigningOperator('');
+        }
     };
 
     const [header, setHeader] = useState({
@@ -244,44 +253,63 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                         {displayedRequests.map(req => (
                             <div
                                 key={req.id}
-                                onClick={() => {
-                                    if (activeTab === 'archive') {
-                                        setSelectedArchiveItem(req);
-                                        setIsArchiveDetailOpen(true);
-                                    } else {
-                                        handleSelectRequest(req);
-                                    }
-                                }}
-                                className={`p-3 rounded border cursor-pointer group transition-all relative overflow-hidden
+                                className={`p-3 rounded border cursor-pointer group transition-all relative overflow-hidden flex flex-col
                                 ${activeTab === 'inbox'
                                         ? 'bg-slate-800/40 border-slate-700/50 hover:bg-slate-800 hover:border-blue-500/30'
                                         : 'bg-slate-900/40 border-slate-800 hover:bg-slate-800'}`}
                             >
-                                {/* Status Indicator Strip */}
-                                <div className={`absolute left-0 top-0 bottom-0 w-1 ${req.status === 'OK' ? 'bg-emerald-500' : (req.status === 'FAIL' ? 'bg-red-500' : 'bg-blue-500')}`}></div>
+                                {/* Click Handler Wrap */}
+                                <div
+                                    className="flex-1"
+                                    onClick={() => {
+                                        if (activeTab === 'archive') {
+                                            setSelectedArchiveItem(req);
+                                            setIsArchiveDetailOpen(true);
+                                        } else {
+                                            handleSelectRequest(req);
+                                        }
+                                    }}
+                                >
+                                    {/* Status Indicator Strip */}
+                                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${req.status === 'OK' ? 'bg-emerald-500' : (req.status === 'FAIL' ? 'bg-red-500' : 'bg-blue-500')}`}></div>
 
-                                <div className="pl-2">
-                                    <div className="flex justify-between items-start mb-1">
-                                        <span className={`text-xs font-mono font-bold ${activeTab === 'inbox' ? 'text-blue-200' : 'text-emerald-200'}`}>
-                                            {req.serialNumber || req.articleNumber}
-                                        </span>
-                                    </div>
-
-                                    <div className="text-[10px] text-slate-400 mb-2 truncate font-medium">
-                                        {req.drawingNumber}
-                                    </div>
-
-                                    {/* Parameter & Time Info */}
-                                    <div className="flex items-center justify-between pt-2 border-t border-slate-700/50 mt-2">
-                                        <div className="flex items-center gap-1.5 text-[9px] text-slate-500">
-                                            <FileSpreadsheet size={10} />
-                                            <span>{req.parameters?.length || req.definitions?.length || 0} mätpunkter</span>
+                                    <div className="pl-2">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <span className={`text-xs font-mono font-bold ${activeTab === 'inbox' ? 'text-blue-200' : 'text-emerald-200'}`}>
+                                                {req.serialNumber || req.articleNumber}
+                                            </span>
                                         </div>
-                                        <div className="text-[9px] text-slate-500 font-mono">
-                                            {new Date(req.timestamp).toLocaleDateString('sv-SE')} <span className="text-slate-600">|</span> {new Date(req.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+
+                                        <div className="text-[10px] text-slate-400 mb-2 truncate font-medium">
+                                            {req.drawingNumber}
+                                        </div>
+
+                                        {/* Parameter & Time Info */}
+                                        <div className="flex items-center justify-between pt-2 border-t border-slate-700/50 mt-2">
+                                            <div className="flex items-center gap-1.5 text-[9px] text-slate-500">
+                                                <FileSpreadsheet size={10} />
+                                                <span>{req.parameters?.length || req.definitions?.length || 0} mätpunkter</span>
+                                            </div>
+                                            <div className="text-[9px] text-slate-500 font-mono">
+                                                {new Date(req.timestamp).toLocaleDateString('sv-SE')}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Delete Button (Only in Archive) */}
+                                {activeTab === 'archive' && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // Prevent opening modal
+                                            onDeleteOrder && onDeleteOrder(req.id);
+                                        }}
+                                        className="absolute top-2 right-2 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-slate-700"
+                                        title="Ta bort rapport permanent"
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -646,16 +674,30 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Välj Operatör</label>
-                                <select
-                                    value={signingOperator}
-                                    onChange={(e) => setSigningOperator(e.target.value)}
-                                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                >
-                                    <option value="">-- Välj i listan --</option>
+                                <div className="max-h-40 overflow-y-auto border border-slate-700 rounded-lg bg-slate-950 p-1 space-y-1">
                                     {operatorList.map((op, idx) => (
-                                        <option key={idx} value={op}>{op}</option>
+                                        <div
+                                            key={idx}
+                                            onClick={() => setSigningOperator(op)}
+                                            className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${signingOperator === op ? 'bg-emerald-600/20 border border-emerald-600/30' : 'hover:bg-slate-800 border border-transparent'}`}
+                                        >
+                                            <div className="text-sm text-slate-200">{op}</div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRemoveOperator(op);
+                                                }}
+                                                className="text-slate-600 hover:text-red-400 p-1"
+                                                title="Ta bort från lista"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
                                     ))}
-                                </select>
+                                    {operatorList.length === 0 && (
+                                        <div className="text-center text-xs text-slate-600 py-4">Inga sparade operatörer</div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="relative">

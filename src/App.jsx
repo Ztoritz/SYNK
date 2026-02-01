@@ -432,7 +432,61 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
                 // Fallback for offline mode
                 setMeasurementRequests([]);
                 setArchivedRequests([]);
+                setMatkortFolder([]);
             }
+        }
+    };
+
+    const handleDeleteOrder = (orderId) => {
+        if (!confirm('Är du säker på att du vill radera denna mätrapport permanent?')) return;
+
+        // 1. Remove from Archives
+        setArchivedRequests(prev => prev.filter(req => req.id !== orderId));
+
+        // 2. Remove from Active (if exists)
+        setMeasurementRequests(prev => prev.filter(req => req.id !== orderId));
+
+        // 3. Remove from Matkort Folder
+        setMatkortFolder(prev => prev.filter(m => m.id !== orderId));
+
+        // 4. Remove from Vault History (Tricky, need to search all items)
+        setVaultItems(prev => prev.map(item => {
+            if (item.measurementHistory?.some(h => (h.serialNumber && h.serialNumber.includes(orderId)) || (h.timestamp && h.timestamp === orderId))) { // ID match might be weak if not stored in history directly
+                // Best effort: filter out by matching timestamp or serial if we had ID mapping. 
+                // Since we don't strictly store ID in history, we might skip this or implement better ID tracking.
+                // For now, let's assume we can filter by matching properties if possible, or just skip history cleanup for simplicity.
+                // Actually, let's look for matching serial if we can find it.
+                // Simpler: Just refresh the "lastResult" if it was this one.
+                return item;
+            }
+            // Deep clean history based on finding the entry with matching ID if we stored it?
+            // Actually we didn't store ID in history `resultObj`. 
+            // Let's implement robust removal by Serial Number which is unique.
+
+            // Find the order to get Serial Number
+            // const order = archivedRequests.find(r => r.id === orderId);
+            // if (!order) return item;
+
+            // Better: We just clear local state.
+            return item;
+        }));
+
+        // Improved Vault History Cleanup:
+        // We need to find the deleted order's serial to remove it from item history.
+        const orderToDelete = archivedRequests.find(r => r.id === orderId) || measurementRequests.find(r => r.id === orderId);
+        if (orderToDelete && orderToDelete.articleNumber) {
+            setVaultItems(prev => prev.map(item => {
+                if (item.artikelnummer === orderToDelete.articleNumber && item.measurementHistory) {
+                    const newHistory = item.measurementHistory.filter(h => h.serialNumber !== orderToDelete.serialNumber);
+                    const newLastResult = newHistory.length > 0 ? newHistory[0] : undefined;
+                    return { ...item, measurementHistory: newHistory, lastResult: newLastResult };
+                }
+                return item;
+            }));
+        }
+
+        if (socket && connected) {
+            socket.emit('delete_order', orderId); // Assuming server supports this or we just handle locally
         }
     };
 
@@ -535,6 +589,7 @@ ${definitions.map(d => `    <Param ID="${d.id}" Nominal="${d.nominal}" TolUp="${
                             onSelectRequest={(id) => {
                                 // Optional: mark as read or remove from queue
                             }}
+                            onDeleteOrder={handleDeleteOrder}
                         />
 
                         {/* Optional: Side XML view for measurement too */}
