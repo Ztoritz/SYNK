@@ -12,10 +12,11 @@ function App() {
 
     // Server Configuration
     // Server Configuration
-    // const SERVER_DOMAIN = 'oso80gcwkkwgogocc8wsowco.109.205.176.58.sslip.io';
-    // const PROTOCOL = window.location.protocol;
-    // Use Localhost by default to pick up our Reset Logic changes
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const SERVER_DOMAIN = 'oso80gcwkkwgogocc8wsowco.109.205.176.58.sslip.io';
+    const PROTOCOL = window.location.protocol;
+    // For Socket.io, we typically use the same base URL
+    const API_URL = import.meta.env.VITE_API_URL || `${PROTOCOL}//${SERVER_DOMAIN}`;
+    // const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
     // Socket State
     const [socket, setSocket] = useState(null);
