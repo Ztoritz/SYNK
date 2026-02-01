@@ -80,8 +80,11 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
         if (m.nominal === '' || m.measured === '') return 'neutral';
         const nom = parseFloat(m.nominal);
         const val = parseFloat(m.measured);
-        const upper = parseFloat(m.upperTol);
-        const lower = parseFloat(m.lowerTol);
+
+        // Ensure robust tolerance handling: 
+        // Upper is always +Abs(val), Lower is always -Abs(val)
+        const upper = Math.abs(parseFloat(m.upperTol));
+        const lower = -Math.abs(parseFloat(m.lowerTol));
 
         if (isNaN(nom) || isNaN(val) || isNaN(upper) || isNaN(lower)) return 'neutral';
 
