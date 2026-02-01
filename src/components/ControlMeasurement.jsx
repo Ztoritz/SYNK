@@ -332,9 +332,14 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                         };
 
                                         const nom = parseSwedishFloat(m.nominal);
-                                        const upper = Math.abs(parseSwedishFloat(m.upperTol) || 0); // Default to 0 if empty
-                                        const lower = Math.abs(parseSwedishFloat(m.lowerTol) || 0);
+                                        // Remove Math.abs to allow negative deviations (e.g. for ISO fits)
+                                        // "Lower" column with value -0.1 implies: Nom - (-0.1) = Nom + 0.1 (common in deviations)
+                                        const upper = parseSwedishFloat(m.upperTol) || 0;
+                                        const lower = parseSwedishFloat(m.lowerTol) || 0;
 
+                                        // Calculate limits based on column headers:
+                                        // Header is "+", so Add Upper.
+                                        // Header is "-", so Subtract Lower.
                                         const minLimit = nom - lower;
                                         const maxLimit = nom + upper;
 
