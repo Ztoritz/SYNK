@@ -9,6 +9,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
     const [selectedArchiveItem, setSelectedArchiveItem] = useState(null);
     const [currentPdfUrl, setCurrentPdfUrl] = useState(null);
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+    const [searchText, setSearchText] = useState('');
 
     const [header, setHeader] = useState({
         articleNumber: '',
@@ -147,38 +148,62 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
         setCurrentRequestId(null);
     };
 
-    const displayedRequests = activeTab === 'inbox' ? incomingRequests : archivedRequests;
+    const displayedRequests = (activeTab === 'inbox' ? incomingRequests : archivedRequests).filter(req => {
+        if (!searchText) return true;
+        const q = searchText.toLowerCase();
+        return (
+            (req.articleNumber && req.articleNumber.toLowerCase().includes(q)) ||
+            (req.drawingNumber && req.drawingNumber.toLowerCase().includes(q)) ||
+            (req.serialNumber && req.serialNumber.toLowerCase().includes(q)) ||
+            (req.id && req.id.toLowerCase().includes(q))
+        );
+    });
 
     return (
         <>
             <div className="flex h-full max-w-7xl mx-auto w-full">
                 {/* Incoming Requests Sidebar */}
-                <div className="w-64 bg-slate-900 border-r border-slate-700 flex flex-col">
+                <div className="w-80 bg-slate-900 border-r border-slate-700 flex flex-col">
                     <div className="p-4 border-b border-slate-700 bg-slate-800/50">
                         <div className="flex items-center gap-2 mb-4">
                             <Inbox size={18} className="text-blue-400" />
-                            <h3 className="text-sm font-semibold text-slate-200">Ordrar</h3>
+                            <h3 className="text-sm font-semibold text-slate-200">Mätordrar</h3>
                         </div>
+
+                        {/* Search Input */}
+                        <div className="relative mb-4">
+                            <input
+                                type="text"
+                                placeholder="Sök ordrar, artikel, id..."
+                                className="w-full bg-slate-950 border border-slate-700 rounded-md py-1.5 pl-8 pr-3 text-xs text-slate-300 focus:outline-none focus:border-blue-500 transition-colors"
+                            />
+                            <div className="absolute left-2.5 top-2 text-slate-600">
+                                <FileText size={12} />
+                            </div>
+                        </div>
+
                         {/* Tabs */}
                         <div className="flex bg-slate-950 p-1 rounded-lg">
                             <button
                                 onClick={() => setActiveTab('inbox')}
-                                className={`flex-1 text-[10px] py-1 rounded font-medium transition-colors ${activeTab === 'inbox' ? 'bg-slate-700 text-white shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                                className={`flex-1 text-[10px] py-1.5 rounded font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'inbox' ? 'bg-slate-700 text-white shadow' : 'text-slate-500 hover:text-slate-300'}`}
                             >
-                                Inkorg ({incomingRequests.length})
+                                Inkorg <span className="bg-blue-600 text-white px-1.5 rounded-full text-[9px]">{incomingRequests.length}</span>
                             </button>
                             <button
                                 onClick={() => setActiveTab('archive')}
-                                className={`flex-1 text-[10px] py-1 rounded font-medium transition-colors ${activeTab === 'archive' ? 'bg-slate-700 text-white shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                                className={`flex-1 text-[10px] py-1.5 rounded font-medium transition-colors flex items-center justify-center gap-2 ${activeTab === 'archive' ? 'bg-slate-700 text-white shadow' : 'text-slate-500 hover:text-slate-300'}`}
                             >
-                                Arkiv
+                                Arkiv <span className="bg-slate-600 text-slate-300 px-1.5 rounded-full text-[9px]">{archivedRequests.length}</span>
                             </button>
                         </div>
                     </div>
+
                     <div className="flex-1 overflow-y-auto p-2 space-y-2">
                         {displayedRequests.length === 0 && (
-                            <div className="text-center py-8 text-slate-500 text-xs">
-                                {activeTab === 'inbox' ? 'Inga väntande ordrar' : 'Inget arkiverat'}
+                            <div className="text-center py-12 text-slate-500 text-xs flex flex-col items-center">
+                                <Inbox className="mb-2 opacity-20" size={32} />
+                                {activeTab === 'inbox' ? 'Inköorgen är tom' : 'Inget i arkivet'}
                             </div>
                         )}
                         {displayedRequests.map(req => (
@@ -186,45 +211,42 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                 key={req.id}
                                 onClick={() => {
                                     if (activeTab === 'archive') {
-                                        // Open detail view for archived items
                                         setSelectedArchiveItem(req);
                                         setIsArchiveDetailOpen(true);
                                     } else {
                                         handleSelectRequest(req);
                                     }
                                 }}
-                                className={`p-3 rounded border cursor-pointer group transition-all 
+                                className={`p-3 rounded border cursor-pointer group transition-all relative overflow-hidden
                                 ${activeTab === 'inbox'
-                                        ? 'bg-slate-800/50 border-slate-700 hover:bg-slate-700'
-                                        : 'bg-slate-900/30 border-slate-800 hover:bg-slate-800 opacity-60 hover:opacity-100'}`}
+                                        ? 'bg-slate-800/40 border-slate-700/50 hover:bg-slate-800 hover:border-blue-500/30'
+                                        : 'bg-slate-900/40 border-slate-800 hover:bg-slate-800'}`}
                             >
-                                <div className="flex justify-between items-start mb-1">
-                                    <span className={`text-xs font-mono font-bold ${activeTab === 'inbox' ? 'text-blue-300' : 'text-emerald-400'}`}>
-                                        {req.serialNumber || req.articleNumber}
-                                    </span>
-                                    <span className="text-[10px] text-slate-500">{new Date(req.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                </div>
-                                <div className="text-xs text-slate-400 truncate">
-                                    {req.serialNumber ? (
-                                        <span className="flex items-center gap-1"><CheckCircle size={10} className="text-emerald-500" /> {req.drawingNumber}</span>
-                                    ) : req.drawingNumber}
-                                </div>
-                                {(req.definitions?.length > 0 || req.parameters?.length > 0) && (
-                                    <span className="text-[9px] text-amber-500 block mt-1">
-                                        {req.parameters?.length || req.definitions?.length} Parametrar
-                                    </span>
-                                )}
+                                {/* Status Indicator Strip */}
+                                <div className={`absolute left-0 top-0 bottom-0 w-1 ${req.status === 'OK' ? 'bg-emerald-500' : (req.status === 'FAIL' ? 'bg-red-500' : 'bg-blue-500')}`}></div>
 
-                                {activeTab === 'inbox' && (
-                                    <div className="mt-2 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span className="text-[10px] text-emerald-400 flex items-center gap-1">Ladda <ArrowRight size={10} /></span>
+                                <div className="pl-2">
+                                    <div className="flex justify-between items-start mb-1">
+                                        <span className={`text-xs font-mono font-bold ${activeTab === 'inbox' ? 'text-blue-200' : 'text-emerald-200'}`}>
+                                            {req.serialNumber || req.articleNumber}
+                                        </span>
                                     </div>
-                                )}
-                                {activeTab === 'archive' && (
-                                    <div className="mt-2 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span className="text-[10px] text-blue-400 flex items-center gap-1">Visa <ArrowRight size={10} /></span>
+
+                                    <div className="text-[10px] text-slate-400 mb-2 truncate font-medium">
+                                        {req.drawingNumber}
                                     </div>
-                                )}
+
+                                    {/* Parameter & Time Info */}
+                                    <div className="flex items-center justify-between pt-2 border-t border-slate-700/50 mt-2">
+                                        <div className="flex items-center gap-1.5 text-[9px] text-slate-500">
+                                            <FileSpreadsheet size={10} />
+                                            <span>{req.parameters?.length || req.definitions?.length || 0} mätpunkter</span>
+                                        </div>
+                                        <div className="text-[9px] text-slate-500 font-mono">
+                                            {new Date(req.timestamp).toLocaleDateString('sv-SE')} <span className="text-slate-600">|</span> {new Date(req.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
