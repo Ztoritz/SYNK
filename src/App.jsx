@@ -188,6 +188,9 @@ function App() {
                     status: p.querySelector('Status')?.textContent,
                     upper: p.querySelector('Tolerance')?.getAttribute('upper'),
                     lower: p.querySelector('Tolerance')?.getAttribute('lower'),
+                    // Capture new attributes
+                    type: p.getAttribute('type'),
+                    method: p.getAttribute('method')
                 }));
                 const isAllOk = results.every(r => r.status === 'OK');
 

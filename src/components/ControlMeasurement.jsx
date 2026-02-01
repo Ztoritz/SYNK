@@ -120,7 +120,7 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
         measurements.forEach(m => {
             if (m.isActive !== false && m.nominal !== '') {
                 const status = checkStatus(m);
-                xml += `    <Parameter id="${m.id}">
+                xml += `    <Parameter id="${m.id}" type="${m.isDiameter ? 'DIA' : 'LIN'}" method="${m.gdtType || 'NONE'}">
       <Description>${m.isDiameter ? 'DIA' : 'LIN'} ${m.gdtType !== 'none' ? m.gdtType.toUpperCase() : ''}</Description>
       <Nominal>${m.nominal}</Nominal>
       <Measured>${m.measured}</Measured>
@@ -490,29 +490,57 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                                     <tr>
                                         <th className="p-2 w-16 text-center">Status</th>
                                         <th className="p-2">ID</th>
+                                        <th className="p-2 w-16 text-center">Typ</th>
+                                        <th className="p-2">Metod</th>
                                         <th className="p-2">Nominellt</th>
+                                        <th className="p-2 text-center text-emerald-500/80">Gränser</th>
                                         <th className="p-2">Uppmätt</th>
                                         <th className="p-2">Tolerans</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700">
-                                    {selectedArchiveItem.parameters?.map(p => (
-                                        <tr key={p.id} className={p.status === 'OK' ? '' : 'bg-red-900/20'}>
-                                            <td className="p-2 text-center">
-                                                {p.status === 'OK' ? (
-                                                    <CheckCircle size={14} className="text-emerald-400 mx-auto" />
-                                                ) : (
-                                                    <AlertCircle size={14} className="text-red-400 mx-auto" />
-                                                )}
-                                            </td>
-                                            <td className="p-2 font-mono text-slate-500">{p.id}</td>
-                                            <td className="p-2 text-slate-300">{p.nominal}</td>
-                                            <td className={`p-2 font-bold font-mono ${p.status === 'OK' ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                {p.measured}
-                                            </td>
-                                            <td className="p-2 text-slate-500">{p.lower} / {p.upper}</td>
-                                        </tr>
-                                    ))}
+                                    {selectedArchiveItem.parameters?.map(p => {
+                                        // Robust parsing for archive view
+                                        const parseSwedishFloat = (val) => {
+                                            if (!val) return NaN;
+                                            const clean = String(val).replace(/\s/g, '').replace(/,/g, '.');
+                                            return parseFloat(clean);
+                                        };
+
+                                        const nom = parseSwedishFloat(p.nominal);
+                                        const upper = parseSwedishFloat(p.upper) || 0;
+                                        const lower = parseSwedishFloat(p.lower) || 0;
+                                        // Klockren V3 logic for archive display
+                                        const minLimit = nom + lower;
+                                        const maxLimit = nom + upper;
+
+                                        return (
+                                            <tr key={p.id} className={p.status === 'OK' ? '' : 'bg-red-900/20'}>
+                                                <td className="p-2 text-center">
+                                                    {p.status === 'OK' ? (
+                                                        <CheckCircle size={14} className="text-emerald-400 mx-auto" />
+                                                    ) : (
+                                                        <AlertCircle size={14} className="text-red-400 mx-auto" />
+                                                    )}
+                                                </td>
+                                                <td className="p-2 font-mono text-slate-500">{p.id}</td>
+                                                <td className="p-2 text-center font-bold text-slate-400">
+                                                    {p.type === 'DIA' || p.isDiameter ? 'Ø' : 'L'}
+                                                </td>
+                                                <td className="p-2 text-slate-400">
+                                                    {p.method && p.method !== 'NONE' ? p.method : '-'}
+                                                </td>
+                                                <td className="p-2 text-slate-300">{p.nominal}</td>
+                                                <td className="p-2 text-center font-mono text-emerald-400/60 bg-emerald-900/10 rounded px-1">
+                                                    {!isNaN(minLimit) ? `${minLimit.toFixed(2)} - ${maxLimit.toFixed(2)}` : '-'}
+                                                </td>
+                                                <td className={`p-2 font-bold font-mono ${p.status === 'OK' ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                    {p.measured}
+                                                </td>
+                                                <td className="p-2 text-slate-500">{p.lower} / {p.upper}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
