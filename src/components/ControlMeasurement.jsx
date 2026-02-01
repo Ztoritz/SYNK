@@ -79,8 +79,8 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
         if (!m.isActive && activeDefinitions) return 'skip';
         if (m.nominal === '' || m.measured === '') return 'neutral';
 
-        // Sanitize inputs (replace comma with dot)
-        const sanitize = (val) => String(val).replace(',', '.');
+        // Sanitize inputs: remove spaces, replace commas with dots
+        const sanitize = (val) => String(val).replace(/\s/g, '').replace(/,/g, '.');
 
         const nom = parseFloat(sanitize(m.nominal));
         const val = parseFloat(sanitize(m.measured));
