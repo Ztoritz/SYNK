@@ -163,17 +163,6 @@ const MeasurementReportCard = ({ data, onClose }) => {
                                 </div>
                             </div>
 
-                            {data.status === 'OK' && (
-                                <div className="border-t-2 border-slate-300 pt-2 w-56 opacity-80">
-                                    <div className="font-serif text-2xl text-blue-900 mb-1 italic font-bold">
-                                        SYSTEM-OK
-                                    </div>
-                                    <div className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Godkännande</div>
-                                    <div className="text-xs text-blue-600 font-mono mt-0.5 flex items-center gap-1">
-                                        Auto-Approved
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
                         <div className="flex items-center gap-3">
