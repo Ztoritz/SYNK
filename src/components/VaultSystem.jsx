@@ -46,8 +46,8 @@ const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matko
                 id: `M${i + 1}`,
                 active: false,
                 nominal: '',
-                upperTol: '0.1',
-                lowerTol: '-0.1',
+                upperTol: '+0,0',
+                lowerTol: '-0,0',
                 isDiameter: false,
                 gdtType: 'none',
             }));
@@ -276,7 +276,7 @@ const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matko
                                             <td className="p-2 font-mono text-slate-500">{def.id}</td>
                                             <td className="p-2">
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     value={def.nominal}
                                                     onChange={(e) => updateConfig(idx, 'nominal', e.target.value)}
                                                     className="w-16 bg-slate-900 border border-slate-600 rounded px-1 py-0.5 text-slate-200"
@@ -294,7 +294,7 @@ const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matko
                                             </td>
                                             <td className="p-2">
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     value={def.upperTol}
                                                     onChange={(e) => updateConfig(idx, 'upperTol', e.target.value)}
                                                     className="w-12 bg-slate-900 border border-slate-600 rounded px-1 py-0.5 text-slate-400"
@@ -302,7 +302,7 @@ const VaultSystem = ({ items, onUpdateItems, onSync, onRequestMeasurement, matko
                                             </td>
                                             <td className="p-2">
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     value={def.lowerTol}
                                                     onChange={(e) => updateConfig(idx, 'lowerTol', e.target.value)}
                                                     className="w-12 bg-slate-900 border border-slate-600 rounded px-1 py-0.5 text-slate-400"

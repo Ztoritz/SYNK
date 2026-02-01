@@ -22,8 +22,8 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
             id: `M${i + 1}`,
             nominal: '',
             measured: '',
-            upperTol: '0.1',
-            lowerTol: '-0.1',
+            upperTol: '+0,0',
+            lowerTol: '-0,0',
             isDiameter: false,
             gdtType: 'none',
             isActive: true
