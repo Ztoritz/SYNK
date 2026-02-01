@@ -80,72 +80,99 @@ const MeasurementReportCard = ({ data, onClose }) => {
                     </div>
                 </div>
 
-                {/* 3. Detailed Results Table */}
+                {/* 3. Detailed Results Table (With XML Fallback for Old Data) */}
                 <div className="flex-1 overflow-y-auto p-0 bg-white">
-                    {(!data.parameters || data.parameters.length === 0) ? (
-                        <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                            <FileText size={48} className="mb-2 opacity-20" />
-                            <p className="text-sm">Inga mätvärden tillgängliga i detta protokoll.</p>
-                        </div>
-                    ) : (
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-slate-100 text-slate-600 text-[10px] uppercase font-bold tracking-wider sticky top-0 shadow-sm z-10">
-                                <tr>
-                                    <th className="p-3 border-b border-slate-200 w-16 text-center">Status</th>
-                                    <th className="p-3 border-b border-slate-200 w-16">Pos</th>
-                                    <th className="p-3 border-b border-slate-200 w-24">Symbol</th>
-                                    <th className="p-3 border-b border-slate-200 text-right">Nominellt</th>
-                                    <th className="p-3 border-b border-slate-200 text-center w-32">Tolerans</th>
-                                    <th className="p-3 border-b border-slate-200 text-center w-32 bg-slate-100/50">Gränser</th>
-                                    <th className="p-3 border-b border-slate-200 text-right font-bold w-32">Uppmätt</th>
-                                    <th className="p-3 border-b border-slate-200 text-right w-24">Avvikelse</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 text-xs font-mono">
-                                {data.parameters.map((p, idx) => {
-                                    const nom = parseSwedishFloat(p.nominal);
-                                    const meas = parseSwedishFloat(p.measured);
-                                    const lower = parseSwedishFloat(p.lower || p.lowerTol);
-                                    const upper = parseSwedishFloat(p.upper || p.upperTol);
-                                    const dev = meas - nom;
+                    {(() => {
+                        // RECOVERY LOGIC: If parameters are missing but XML exists, parse it on-the-fly!
+                        let displayParams = data.parameters;
+                        if ((!displayParams || displayParams.length === 0) && data.xml) {
+                            try {
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(data.xml, "text/xml");
+                                displayParams = Array.from(doc.querySelectorAll('Parameter')).map(p => ({
+                                    id: p.getAttribute('id'),
+                                    nominal: p.querySelector('Nominal')?.textContent,
+                                    measured: p.querySelector('Measured')?.textContent,
+                                    status: p.querySelector('Status')?.textContent,
+                                    upper: p.querySelector('Tolerance')?.getAttribute('upper'),
+                                    lower: p.querySelector('Tolerance')?.getAttribute('lower'),
+                                    type: p.getAttribute('type'),
+                                    method: p.getAttribute('method')
+                                }));
+                            } catch (e) {
+                                console.error("Failed to parse fallback XML", e);
+                            }
+                        }
 
-                                    const minLim = nom - Math.abs(lower || 0);
-                                    const maxLim = nom + Math.abs(upper || 0);
+                        if (!displayParams || displayParams.length === 0) {
+                            return (
+                                <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                                    <FileText size={48} className="mb-2 opacity-20" />
+                                    <p className="text-sm">Inga mätvärden tillgängliga i detta protokoll.</p>
+                                </div>
+                            );
+                        }
 
-                                    return (
-                                        <tr key={idx} className={`hover:bg-blue-50/50 transition-colors ${p.status !== 'OK' ? 'bg-red-50' : ''}`}>
-                                            <td className="p-3 text-center border-r border-slate-100">
-                                                {p.status === 'OK' ? <CheckCircle size={16} className="text-emerald-600 mx-auto" /> : <AlertCircle size={16} className="text-red-600 mx-auto" />}
-                                            </td>
-                                            <td className="p-3 text-slate-500 border-r border-slate-100 font-bold">{p.id}</td>
-                                            <td className="p-3 text-slate-600 border-r border-slate-100">
-                                                {p.type && p.type !== 'none' ? (
-                                                    <span className="inline-block w-6 h-6 rounded bg-slate-200 text-center leading-6 text-sm font-bold text-slate-700" title={p.type}>
-                                                        {/* Map types to symbols if needed, or rely on stored symbol */}
-                                                        {p.type === 'position' ? '⌖' : p.type === 'flatness' ? '⏥' : p.type === 'perpendicularity' ? '⟂' : p.type === 'parallelism' ? '∥' : p.type === 'DIA' ? '⌀' : p.type === 'L' ? '⏤' : '⏤'}
-                                                    </span>
-                                                ) : '-'}
-                                                {p.method && <span className="ml-2 text-[10px] text-slate-400">{p.method}</span>}
-                                            </td>
-                                            <td className="p-3 text-right text-slate-700 font-medium border-r border-slate-100">{p.nominal}</td>
-                                            <td className="p-3 text-center text-slate-500 border-r border-slate-100">
-                                                <span className="text-xs">+{p.upper || p.upperTol}</span> / <span className="text-xs">-{p.lower || p.lowerTol}</span>
-                                            </td>
-                                            <td className="p-3 text-center text-slate-500 border-r border-slate-100 bg-slate-50/50">
-                                                <span className="opacity-80">[{minLim.toFixed(2)} - {maxLim.toFixed(2)}]</span>
-                                            </td>
-                                            <td className={`p-3 text-right font-bold text-sm border-r border-slate-100 bg-slate-50 ${p.status === 'OK' ? 'text-emerald-700' : 'text-red-600 underline decoration-red-300'}`}>
-                                                {p.measured}
-                                            </td>
-                                            <td className={`p-3 text-right font-bold ${Math.abs(dev) > 0 ? (p.status === 'OK' ? 'text-blue-600' : 'text-red-600') : 'text-slate-400'}`}>
-                                                {!isNaN(dev) ? (dev > 0 ? `+${dev.toFixed(2)}` : dev.toFixed(2)) : '-'}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    )}
+                        return (
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-slate-100 text-slate-600 text-[10px] uppercase font-bold tracking-wider sticky top-0 shadow-sm z-10">
+                                    <tr>
+                                        <th className="p-3 border-b border-slate-200 w-16 text-center">Status</th>
+                                        <th className="p-3 border-b border-slate-200 w-16">Pos</th>
+                                        <th className="p-3 border-b border-slate-200 w-24">Symbol</th>
+                                        <th className="p-3 border-b border-slate-200 text-right">Nominellt</th>
+                                        <th className="p-3 border-b border-slate-200 text-center w-32">Tolerans</th>
+                                        <th className="p-3 border-b border-slate-200 text-center w-32 bg-slate-100/50">Gränser</th>
+                                        <th className="p-3 border-b border-slate-200 text-right font-bold w-32">Uppmätt</th>
+                                        <th className="p-3 border-b border-slate-200 text-right w-24">Avvikelse</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 text-xs font-mono">
+                                    {displayParams.map((p, idx) => {
+                                        const nom = parseSwedishFloat(p.nominal);
+                                        const meas = parseSwedishFloat(p.measured);
+                                        const lower = parseSwedishFloat(p.lower || p.lowerTol);
+                                        const upper = parseSwedishFloat(p.upper || p.upperTol);
+                                        const dev = meas - nom;
+
+                                        const minLim = nom - Math.abs(lower || 0);
+                                        const maxLim = nom + Math.abs(upper || 0);
+
+                                        return (
+                                            <tr key={idx} className={`hover:bg-blue-50/50 transition-colors ${p.status !== 'OK' ? 'bg-red-50' : ''}`}>
+                                                <td className="p-3 text-center border-r border-slate-100">
+                                                    {p.status === 'OK' ? <CheckCircle size={16} className="text-emerald-600 mx-auto" /> : <AlertCircle size={16} className="text-red-600 mx-auto" />}
+                                                </td>
+                                                <td className="p-3 text-slate-500 border-r border-slate-100 font-bold">{p.id}</td>
+                                                <td className="p-3 text-slate-600 border-r border-slate-100">
+                                                    {p.type && p.type !== 'none' ? (
+                                                        <span className="inline-block w-6 h-6 rounded bg-slate-200 text-center leading-6 text-sm font-bold text-slate-700" title={p.type}>
+                                                            {/* Map types to symbols if needed, or rely on stored symbol */}
+                                                            {p.type === 'position' ? '⌖' : p.type === 'flatness' ? '⏥' : p.type === 'perpendicularity' ? '⟂' : p.type === 'parallelism' ? '∥' : p.type === 'DIA' ? '⌀' : p.type === 'L' ? '⏤' : '⏤'}
+                                                        </span>
+                                                    ) : '-'}
+                                                    {p.method && <span className="ml-2 text-[10px] text-slate-400">{p.method}</span>}
+                                                </td>
+                                                <td className="p-3 text-right text-slate-700 font-medium border-r border-slate-100">{p.nominal}</td>
+                                                <td className="p-3 text-center text-slate-500 border-r border-slate-100">
+                                                    <span className="text-xs">+{p.upper || p.upperTol}</span> / <span className="text-xs">-{p.lower || p.lowerTol}</span>
+                                                </td>
+                                                <td className="p-3 text-center text-slate-500 border-r border-slate-100 bg-slate-50/50">
+                                                    <span className="opacity-80">[{minLim.toFixed(2)} - {maxLim.toFixed(2)}]</span>
+                                                </td>
+                                                <td className={`p-3 text-right font-bold text-sm border-r border-slate-100 bg-slate-50 ${p.status === 'OK' ? 'text-emerald-700' : 'text-red-600 underline decoration-red-300'}`}>
+                                                    {p.measured}
+                                                </td>
+                                                <td className={`p-3 text-right font-bold ${Math.abs(dev) > 0 ? (p.status === 'OK' ? 'text-blue-600' : 'text-red-600') : 'text-slate-400'}`}>
+                                                    {!isNaN(dev) ? (dev > 0 ? `+${dev.toFixed(2)}` : dev.toFixed(2)) : '-'}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        );
+                    })()}
                 </div>
 
                 {/* 4. Signature & Footer - PAPER THEME */}
@@ -163,6 +190,7 @@ const MeasurementReportCard = ({ data, onClose }) => {
                                 </div>
                             </div>
 
+                            {/* Auto-Approved Block Removed */}
                         </div>
 
                         <div className="flex items-center gap-3">
