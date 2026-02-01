@@ -199,9 +199,12 @@ const ControlMeasurement = ({ onXmlGenerated, incomingRequests = [], archivedReq
                 {/* Incoming Requests Sidebar */}
                 <div className="w-80 bg-slate-900 border-r border-slate-700 flex flex-col">
                     <div className="p-4 border-b border-slate-700 bg-slate-800/50">
-                        <div className="flex items-center gap-2 mb-4">
-                            <Inbox size={18} className="text-blue-400" />
-                            <h3 className="text-sm font-semibold text-slate-200">Mätordrar</h3>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <Inbox size={18} className="text-blue-400" />
+                                <h3 className="text-sm font-semibold text-slate-200">Mätordrar</h3>
+                            </div>
+                            <span className="text-[9px] font-mono text-slate-600">v1.1.1</span>
                         </div>
 
                         {/* Search Input */}
